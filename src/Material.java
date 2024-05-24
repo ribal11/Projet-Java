@@ -21,7 +21,15 @@ public class Material extends Resource {
 
     }
 
+    public void updateMaterialResources(String name, String type, double costNum, String desc, Set<String> tasks) {
+        this.description = desc;
+        this.materialType = type;
+        this.name = name;
+        this.taskAllowed = tasks;
+        this.unitCost = costNum;
+    }
+
     public String toString() {
-        return super.toString() + materialType + ", " + unitCost;
+        return super.toString() + materialType + ", " + "," + description + "," + unitCost;
     }
 }

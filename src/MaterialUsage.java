@@ -1,7 +1,7 @@
 import java.io.Serializable;
 
 public class MaterialUsage implements MaterialCostCalculator, Serializable, Comparable<MaterialUsage> {
-    int next = 1;
+    static int next = 1;
     Material material;
     int id;
     int qty;

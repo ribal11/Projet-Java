@@ -27,6 +27,6 @@ public abstract class Resource implements Serializable, Comparable<Resource> {
     }
 
     public String toString() {
-        return id + ", " + name + ", " + type + ", ";
+        return id + ", " + name + ", ";
     }
 }

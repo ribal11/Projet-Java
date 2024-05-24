@@ -5,7 +5,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class Projet implements Comparable<Projet>, Serializable, CalcCost, CalcDuration, CheckState {
+public class Projet extends MyObservable
+        implements Comparable<Projet>, Serializable, CalcCost, CalcDuration, CheckState, MyObserver {
     static int next = 10;
     ArrayList<String> possibleTasks = new ArrayList<>(
             Arrays.asList("Conception", "Préparation", "Fabrication", "Assemblage", "Test"));
@@ -34,11 +35,20 @@ public class Projet implements Comparable<Projet>, Serializable, CalcCost, CalcD
         return projId + ", " + state + ", " + cost + ", " + duration + "h";
     }
 
-    public void removeTask(String task) {
+    public void addTask(Task task) {
+        if (tasks.add(task)) {
+            task.addObserver(this);
+            updateProject();
+        }
+    }
+
+    public void removePossibleTask(String task) {
         this.possibleTasks.remove(task);
+        updateProject();
     }
 
     public void calcCost() {
+        this.cost = 0;
         Iterator<Task> it = tasks.iterator();
         while (it.hasNext()) {
             Task task = it.next();
@@ -47,23 +57,38 @@ public class Projet implements Comparable<Projet>, Serializable, CalcCost, CalcD
     }
 
     public void calcDuration() {
+        this.duration = 0;
         Iterator<Task> it = tasks.iterator();
         while (it.hasNext()) {
             Task task = it.next();
             this.duration += task.duration;
         }
+
     }
 
     public void checkState() {
-        boolean finished = true;
+
         Iterator<Task> it = tasks.iterator();
         while (it.hasNext()) {
             Task task = it.next();
             if (task.state != "finished")
-                finished = false;
+                return;
         }
-        if (finished) {
-            this.state = "finished";
-        }
+
+        this.state = "finished";
+
     }
+
+    public void updateProject() {
+        calcCost();
+        calcDuration();
+        checkState();
+        setChanged();
+        notifyObservers();
+    }
+
+    public void update() {
+        updateProject();
+    }
+
 }

@@ -22,6 +22,15 @@ public class HumanResource extends Resource {
 
     }
 
+    public void updateHumanResources(String name, String spec, String job, double payNum, Set<String> tasks) {
+        this.hourlyRate = payNum;
+        this.job = job;
+        this.name = name;
+        this.speciality = spec;
+        this.taskAllowed = tasks;
+
+    }
+
     public String toString() {
         return super.toString() + speciality + ", " + job + ", " + hourlyRate;
     }

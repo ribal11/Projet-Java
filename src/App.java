@@ -7,7 +7,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -18,6 +28,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -27,7 +38,15 @@ import javax.swing.event.ListSelectionListener;
 
 public class App extends JFrame {
     static final String[] allTasks = { "conception", "rawMaterial", "fabrication", "assemblage", "test" };
-
+    int ResourceId = 0;
+    File f;
+    InputStream is;
+    OutputStream os;
+    ObjectInputStream ois;
+    ObjectOutputStream oos;
+    ResourceManager resourceManager;
+    Material mat;
+    HumanResource humanRc;
     JTabbedPane mainTabbedPane, secondaryTabbedPane;
     JRadioButton humanResourceRdb, materialResourceRdb, rawMaterialRdb, miscellaneousMaterialRdb;
     ButtonGroup resourceGroup, materialGroup;
@@ -37,27 +56,37 @@ public class App extends JFrame {
     JTextField humanNameTxt, materialNameTxt, specialityTxt, jobTxt, hourlyPayTxt, materialCostTxt, materialDescTxt;
     JCheckBox conceptionCheckBox, fabricationCheckBox, assemblageCheckBox, testCheckBox, rawMaterialCheckBox;
     JList<Resource> resourcesLst;
-    DefaultListModel<Resource> resourceLstMdl;
-    JButton saveResourceBtn, newResourceBtn;
+    DefaultListModel<Resource> humanResourceLstMdl, materialResourceLstMdl;
+    JButton saveResourceBtn, newResourceBtn, writeButton;
     JPanel firstTabbedPanel, resourcePanel, humanResourcePanel, materialResourcePanel, resourceTypePanel,
-            resourceListPanel, allowedTaskPanel, actionsResourcePanel;
+            resourceListPanel, allowedTaskPanel, actionsResourcePanel, projectFormPanel;
 
-    Set<Resource> resourceSet;
+    Set<HumanResource> humanResourceSet;
+    Set<Material> materialResourceSet;
     List<JCheckBox> allTaskcheckBoxes;
+    // end Resources form
+    // ###############################################################################################################################
 
-    public App() {
+    public App(ResourceManager resourceManager) {
 
         super("Project Management");
-
+        this.resourceManager = resourceManager;
         allTaskcheckBoxes = new ArrayList<>();
-
-        resourceSet = new TreeSet<>();
+        humanResourceLstMdl = new DefaultListModel<>();
+        materialResourceLstMdl = new DefaultListModel<>();
+        humanResourceSet = new TreeSet<>();
+        materialResourceSet = new TreeSet<>();
+        materialResourceSet = new TreeSet<>();
+        readAll();
         mainTabbedPane = new JTabbedPane();
+
         this.add(mainTabbedPane);
 
         // Initialize the resourcePanel and its components
         resourcePanel = new JPanel();
         resourcePanel.setLayout(null);
+        projectFormPanel = new JPanel();
+        projectFormPanel.setLayout(null);
 
         resourceTypePanel = new JPanel();
         resourceTypePanel.setLayout(null);
@@ -70,12 +99,10 @@ public class App extends JFrame {
             public void itemStateChanged(ItemEvent e) {
                 if (humanResourceRdb.isSelected()) {
                     if (resourcesLst.getSelectedIndex() >= 0) {
-                        Resource rec = resourcesLst.getSelectedValue();
-                        if (!rec.type.equals("Human")) {
-                            resourcesLst.clearSelection();
+                        resourcesLst.clearSelection();
 
-                        }
                     }
+                    resourcesLst.setModel(humanResourceLstMdl);
 
                     materialNameTxt.setText("");
                     materialCostTxt.setText("");
@@ -107,13 +134,10 @@ public class App extends JFrame {
             public void itemStateChanged(ItemEvent e) {
                 if (materialResourceRdb.isSelected()) {
                     if (resourcesLst.getSelectedIndex() >= 0) {
-                        Resource rec = resourcesLst.getSelectedValue();
-                        if (!rec.type.equals("Material")) {
-                            resourcesLst.clearSelection();
+                        resourcesLst.clearSelection();
 
-                        }
                     }
-
+                    resourcesLst.setModel(materialResourceLstMdl);
                     humanNameTxt.setText("");
                     specialityTxt.setText("");
                     jobTxt.setText("");
@@ -256,59 +280,17 @@ public class App extends JFrame {
         resourceListPanel = new JPanel();
         resourceListPanel.setLayout(new BorderLayout());
         resourceListPanel.setBounds(270, 45, 250, 140);
-        resourceLstMdl = new DefaultListModel<>();
-        resourcesLst = new JList<>(resourceLstMdl);
+
+        resourcesLst = new JList<>(humanResourceLstMdl);
         resourcesLst.setBorder(new TitledBorder("resources"));
         resourcesLst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         resourcesLst.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                if (resourcesLst.getSelectedIndex() >= 0) {
-                    Resource resource = resourcesLst.getSelectedValue();
-                    if (resource.type == "Human") {
-                        HumanResource humanResource = (HumanResource) resource;
-                        if (!humanResourceRdb.isSelected()) {
-                            humanResourceRdb.setSelected(true);
-                        }
-
-                        humanNameTxt.setText(resource.name);
-                        specialityTxt.setText(humanResource.speciality);
-                        jobTxt.setText(humanResource.job);
-                        hourlyPayTxt.setText(String.valueOf(humanResource.hourlyRate));
-
-                        for (int i = 0; i < allTasks.length; i++) {
-                            if (humanResource.taskAllowed.contains(allTasks[i])) {
-                                allTaskcheckBoxes.get(i).setSelected(true);
-                            } else {
-                                allTaskcheckBoxes.get(i).setSelected(false);
-                            }
-                        }
-                    } else {
-                        Material materialResource = (Material) resource;
-                        if (!materialResourceRdb.isSelected()) {
-                            materialResourceRdb.setSelected(true);
-                        }
-
-                        materialNameTxt.setText(materialResource.name);
-                        materialDescTxt.setText(materialResource.description);
-                        materialCostTxt.setText(String.valueOf(materialResource.unitCost));
-                        if (materialResource.materialType == "Raw material") {
-                            rawMaterialRdb.setSelected(true);
-                        } else {
-                            miscellaneousMaterialRdb.setSelected(true);
-                        }
-                        for (int i = 0; i < allTasks.length; i++) {
-                            if (materialResource.taskAllowed.contains(allTasks[i])) {
-                                allTaskcheckBoxes.get(i).setSelected(true);
-                            } else {
-                                allTaskcheckBoxes.get(i).setSelected(false);
-                            }
-                        }
-                    }
-                }
-
+                handleResourceListChanges();
             }
         });
-        resourceListPanel.add(resourcesLst);
+        JScrollPane scrollPane = new JScrollPane(resourcesLst);
+        resourceListPanel.add(scrollPane, BorderLayout.CENTER);
         resourcePanel.add(resourceListPanel);
 
         // checkBoxes
@@ -348,7 +330,7 @@ public class App extends JFrame {
 
         actionsResourcePanel = new JPanel();
         actionsResourcePanel.setLayout(null);
-        actionsResourcePanel.setBounds(5, 260, 160, 45);
+        actionsResourcePanel.setBounds(5, 260, 320, 45);
 
         newResourceBtn = new JButton("NEW");
         newResourceBtn.setBounds(5, 5, 70, 40);
@@ -368,11 +350,20 @@ public class App extends JFrame {
         });
         actionsResourcePanel.add(saveResourceBtn);
 
+        writeButton = new JButton("WRITE ON DISK");
+        writeButton.setBounds(165, 5, 130, 40);
+        writeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                writeResources();
+            }
+        });
+        actionsResourcePanel.add(writeButton);
         resourcePanel.add(actionsResourcePanel);
 
         // Initialize the secondaryTabbedPane and add the resourcePanel to it
         secondaryTabbedPane = new JTabbedPane();
         secondaryTabbedPane.addTab("Resources", resourcePanel);
+        secondaryTabbedPane.addTab("Project Form", projectFormPanel);
 
         // Add the secondaryTabbedPane to the mainTabbedPane
         mainTabbedPane.addTab("Form Tab", secondaryTabbedPane);
@@ -380,7 +371,8 @@ public class App extends JFrame {
     }
 
     public static void main(String[] args) throws Exception {
-        App frame = new App();
+        ResourceManager resourceManager = new ResourceManager();
+        App frame = new App(resourceManager);
         frame.setSize(600, 500);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -457,17 +449,14 @@ public class App extends JFrame {
                 }
                 if (resourcesLst.getSelectedIndex() >= 0) {
                     Resource rec = resourcesLst.getSelectedValue();
-                    resourceSet.remove(rec);
-                    Resource employee = new HumanResource(rec.id, name, spec, job, payNum, tasks);
-                    if (resourceSet.add(employee)) {
-                        resourceLstMdl.setElementAt(employee, resourcesLst.getSelectedIndex());
-                    }
-
+                    humanRc = (HumanResource) rec;
+                    humanRc.updateHumanResources(name, spec, job, payNum, tasks);
                     resourcesLst.clearSelection();
                 } else {
-                    Resource employee = new HumanResource(name, spec, job, payNum, tasks);
-                    if (resourceSet.add(employee)) {
-                        resourceLstMdl.addElement(employee);
+                    humanRc = new HumanResource(name, spec, job, payNum, tasks);
+                    if (humanResourceSet.add(humanRc)) {
+                        humanResourceLstMdl.addElement(humanRc);
+                        resourceManager.addEmployee(humanRc);
                     }
                 }
                 humanNameTxt.setText("");
@@ -521,17 +510,16 @@ public class App extends JFrame {
                 String type = rawMaterialRdb.isSelected() ? "Raw material" : "miscellaneous";
                 if (resourcesLst.getSelectedIndex() >= 0) {
                     Resource rec = resourcesLst.getSelectedValue();
-                    resourceSet.remove(rec);
-                    Resource employee = new Material(rec.id, name, type, costNum, desc, tasks);
-                    if (resourceSet.add(employee)) {
-                        resourceLstMdl.setElementAt(employee, resourcesLst.getSelectedIndex());
-                    }
+                    mat = (Material) rec;
+
+                    mat.updateMaterialResources(name, type, costNum, desc, tasks);
 
                     resourcesLst.clearSelection();
                 } else {
-                    Resource material = new Material(name, type, costNum, desc, tasks);
-                    if (resourceSet.add(material)) {
-                        resourceLstMdl.addElement(material);
+                    mat = new Material(name, type, costNum, desc, tasks);
+                    if (materialResourceSet.add(mat)) {
+                        materialResourceLstMdl.addElement(mat);
+                        resourceManager.addMaterial(mat);
                     }
                 }
 
@@ -555,4 +543,163 @@ public class App extends JFrame {
             }
         }
     }
+
+    public void handleResourceListChanges() {
+        if (resourcesLst.getSelectedIndex() >= 0) {
+            Resource resource = resourcesLst.getSelectedValue();
+            if (resource.type == "Human") {
+                HumanResource humanResource = (HumanResource) resource;
+                if (!humanResourceRdb.isSelected()) {
+                    humanResourceRdb.setSelected(true);
+                }
+
+                humanNameTxt.setText(resource.name);
+                specialityTxt.setText(humanResource.speciality);
+                jobTxt.setText(humanResource.job);
+                hourlyPayTxt.setText(String.valueOf(humanResource.hourlyRate));
+
+                for (int i = 0; i < allTasks.length; i++) {
+                    if (humanResource.taskAllowed.contains(allTasks[i])) {
+                        allTaskcheckBoxes.get(i).setSelected(true);
+                    } else {
+                        allTaskcheckBoxes.get(i).setSelected(false);
+                    }
+                }
+            } else {
+                Material materialResource = (Material) resource;
+                if (!materialResourceRdb.isSelected()) {
+                    materialResourceRdb.setSelected(true);
+                }
+
+                materialNameTxt.setText(materialResource.name);
+                materialDescTxt.setText(materialResource.description);
+                materialCostTxt.setText(String.valueOf(materialResource.unitCost));
+                if (materialResource.materialType == "Raw material") {
+                    rawMaterialRdb.setSelected(true);
+                } else {
+                    miscellaneousMaterialRdb.setSelected(true);
+                }
+                for (int i = 0; i < allTasks.length; i++) {
+                    if (materialResource.taskAllowed.contains(allTasks[i])) {
+                        allTaskcheckBoxes.get(i).setSelected(true);
+                    } else {
+                        allTaskcheckBoxes.get(i).setSelected(false);
+                    }
+                }
+            }
+        }
+    }
+
+    private void readMaterialResources() {
+        ;
+
+        try {
+            File materialFile = new File("material.dat");
+            if (!materialFile.exists()) {
+                materialFile.createNewFile();
+            }
+            if (materialFile.length() == 0) {
+                // Handle empty file scenario
+                return;
+            }
+
+            try (FileInputStream fis = new FileInputStream(materialFile);
+                    ObjectInputStream ois = new ObjectInputStream(fis)) {
+
+                materialResourceSet = ((Set<Material>) ois.readObject());
+
+                Iterator<Material> it = materialResourceSet.iterator();
+                while (it.hasNext()) {
+                    Material material = it.next();
+                    materialResourceLstMdl.addElement(material);
+                    ResourceId = Math.max(ResourceId, material.id); // Update id with the maximum value
+                    resourceManager.addMaterial(material);
+                }
+            } catch (EOFException eof) {
+                // Handle EOFException (file is empty or not in the expected format)
+                eof.printStackTrace();
+            }
+        } catch (IOException | ClassNotFoundException | ClassCastException ex) {
+            ex.printStackTrace();
+        }
+
+        // Set the next id to be used
+
+    }
+
+    private void readHumanResource() {
+        try {
+            File humanFile = new File("human.dat");
+            if (!humanFile.exists()) {
+                humanFile.createNewFile();
+            }
+            if (humanFile.length() == 0) {
+                // Handle empty file scenario
+                return;
+            }
+
+            try (FileInputStream fis = new FileInputStream(humanFile);
+                    ObjectInputStream ois = new ObjectInputStream(fis)) {
+
+                humanResourceSet = ((Set<HumanResource>) ois.readObject());
+
+                Iterator<HumanResource> it = humanResourceSet.iterator();
+                while (it.hasNext()) {
+                    HumanResource humanRec = it.next();
+                    humanResourceLstMdl.addElement(humanRec);
+                    ResourceId = Math.max(ResourceId, humanRec.id); // Update id with the maximum value
+                    resourceManager.addEmployee(humanRec);
+                }
+            } catch (EOFException eof) {
+                // Handle EOFException (file is empty or not in the expected format)
+                eof.printStackTrace();
+            }
+        } catch (IOException | ClassNotFoundException | ClassCastException ex) {
+            ex.printStackTrace();
+        }
+
+    }
+
+    private void readAll() {
+        readHumanResource();
+        readMaterialResources();
+        Resource.next = ResourceId + 1;
+    }
+
+    private void writeResources() {
+        try {
+            // Writing materialResourceSet
+            File materialFile = new File("material.dat");
+            if (!materialFile.exists()) {
+                materialFile.createNewFile();
+            }
+            if (materialResourceSet.size() != 0) {
+                FileOutputStream fosMaterial = new FileOutputStream(materialFile);
+                ObjectOutputStream oosMaterial = new ObjectOutputStream(fosMaterial);
+                oosMaterial.writeObject(materialResourceSet);
+                oosMaterial.flush(); // Flush before closing
+                oosMaterial.close(); // Close the stream
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+
+        try {
+            // Writing humanResourceSet
+            File humanFile = new File("human.dat");
+            if (!humanFile.exists()) {
+                humanFile.createNewFile();
+            }
+            if (humanResourceSet.size() != 0) {
+                FileOutputStream fosHuman = new FileOutputStream(humanFile);
+                ObjectOutputStream oosHuman = new ObjectOutputStream(fosHuman);
+                oosHuman.writeObject(humanResourceSet);
+                oosHuman.flush(); // Flush before closing
+                oosHuman.close(); // Close the stream
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
 }
