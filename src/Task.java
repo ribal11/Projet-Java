@@ -6,7 +6,7 @@ import java.util.Iterator;
 
 public class Task extends MyObservable
         implements Comparable<Task>, Serializable, CalcCost, CalcDuration, CheckState, MyObserver {
-    int next = 1;
+    static int next = 1;
     int id;
     String name;
     Set<Process> processes;
@@ -36,6 +36,12 @@ public class Task extends MyObservable
             process.addObserver(this);
             updateTask();
         }
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        setChanged();
+        notifyObservers();
     }
 
     public void removeProcess(Process process) {

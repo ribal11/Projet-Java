@@ -32,7 +32,13 @@ public class Projet extends MyObservable
     }
 
     public String toString() {
-        return projId + ", " + state + ", " + cost + ", " + duration + "h";
+        return projId + ", " + name + ", " + state + ", " + cost + ", " + duration + "h";
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        setChanged();
+        notifyObservers();
     }
 
     public void addTask(Task task) {
@@ -70,6 +76,7 @@ public class Projet extends MyObservable
 
         Iterator<Task> it = tasks.iterator();
         while (it.hasNext()) {
+
             Task task = it.next();
             if (task.state != "finished")
                 return;
