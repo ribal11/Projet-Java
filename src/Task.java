@@ -13,10 +13,13 @@ public class Task extends MyObservable
     double cost;
     String state;
     int duration;
+    String type;
+    boolean finished = false;
 
-    public Task(String name) {
+    public Task(String name, String type) {
         id = next++;
         this.name = name;
+        this.type = type;
         processes = new TreeSet<>();
         cost = 0;
         state = "No processes added";
@@ -28,7 +31,7 @@ public class Task extends MyObservable
     }
 
     public String toString() {
-        return id + ", " + cost + ", " + state + ", " + duration + "h";
+        return id + ", " + name + ", " + cost + ", " + state + ", " + duration + "h";
     }
 
     public void addProcess(Process process) {
@@ -49,6 +52,16 @@ public class Task extends MyObservable
             process.removeObserver(this);
             updateTask();
         }
+    }
+    
+    public void cleanUp() {
+    	Iterator<Process> itProcess = this.processes.iterator();
+    	while(itProcess.hasNext()) {
+    		Process process = itProcess.next();
+    		process.removeObserver(this);
+    		itProcess.remove();
+    		
+    	}
     }
 
     public void calcCost() {
@@ -76,13 +89,23 @@ public class Task extends MyObservable
         Iterator<Process> it = processes.iterator();
         while (it.hasNext()) {
             Process process = it.next();
-            if (process.state != "finished")
+            if (!process.finished) {
+            	this.state= "Running";
+                this.finished = false;
                 return;
+            }
+            	
         }
         this.state = "finished";
+        this.finished = true;
 
     }
 
+    public void addObserverToProcesses() {
+        for (Process process : processes) {
+            process.addObserver(this);
+        }
+    }
     public void updateTask() {
         calcCost();
         calcDuration();

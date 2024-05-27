@@ -5,31 +5,52 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class Process extends MyObservable implements Comparable<Process>, Serializable, CalcCost {
-    int next = 1;
+    static int next = 1;
     int id;
+    String name;
     Set<MaterialUsage> materials;
     Set<HumanResourceUsage> humanResources;
     double cost;
     String state;
     int duration;
-
-    public Process(int duration) {
+    boolean finished;
+    public Process( String name, int duration) {
         id = next++;
         materials = new TreeSet<>();
         humanResources = new TreeSet<>();
         this.cost = 0;
         state = "Running";
+        this.name = name;
+        this.finished = false;
         this.duration = duration;
     }
 
     public int compareTo(Process process) {
         return Integer.compare(this.id, process.id);
     }
-
+    
+    public void setName(String name) {
+    	this.name = name;
+    }
     public void finishProcess() {
         this.state = "finished";
+        this.finished = true;
         setChanged();
         notifyObservers();
+    }
+    
+    public void cleanUp() {
+    	this.materials.clear();
+    	this.humanResources.clear();
+    	setChanged();
+    	notifyObservers();
+    }
+    
+    public void stillProcessing() {
+    	this.state = "Running";
+    	this.finished = false;
+    	setChanged();
+    	notifyObservers();
     }
 
     public void addMaterialUsage(MaterialUsage materialUsage) {
@@ -66,6 +87,13 @@ public class Process extends MyObservable implements Comparable<Process>, Serial
             }
         }
 
+    }
+    
+    public void setDuration(int duration) {
+    	this.duration = duration;
+    	setChanged();
+    	notifyObservers();
+    	
     }
 
     public void calcCost() {

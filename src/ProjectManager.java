@@ -18,6 +18,13 @@ public class ProjectManager extends MyObservable implements MyObserver {
         setChanged();
         notifyObservers();
     }
+    
+    public void removeProject(Projet projet) {
+    	myProjects.remove(projet);
+    	projet.removeObserver(this);
+    	setChanged();
+    	notifyObservers();
+    }
 
     public void update() {
         setChanged();

@@ -21,7 +21,10 @@ public abstract class Resource implements Serializable, Comparable<Resource> {
         this.name = name;
         this.taskAllowed = taskAllowed;
     }
-
+    
+    public String toComboBoxString() {
+    	return this.name;
+    }
     public int compareTo(Resource resource) {
         return Integer.compare(this.id, resource.id);
     }

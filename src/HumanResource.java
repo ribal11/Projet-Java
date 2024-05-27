@@ -1,7 +1,8 @@
 import java.util.Set;
 
 public class HumanResource extends Resource {
-    String speciality;
+    
+	String speciality;
     String job;
     double hourlyRate;
 
