@@ -58,7 +58,7 @@ public class App extends JFrame {
 
     Material mat;
     HumanResource humanRc;
-    JTabbedPane mainTabbedPane, secondaryTabbedPane;
+    JTabbedPane  secondaryTabbedPane;
     JRadioButton humanResourceRdb, materialResourceRdb, rawMaterialRdb, miscellaneousMaterialRdb;
     ButtonGroup resourceGroup, materialGroup;
     JLabel humanResourceLbl, materialResourceLbl, rawMaterialLbl, miscellaneousMaterialLbl, resourceNameLbl,
@@ -183,9 +183,9 @@ public class App extends JFrame {
         employeeCmbMdl = new DefaultComboBoxModel<>();
         materialCmbMdl = new DefaultComboBoxModel<>();
         readAll();
-        mainTabbedPane = new JTabbedPane();
-
-        getContentPane().add(mainTabbedPane);
+        
+        secondaryTabbedPane = new JTabbedPane();
+        getContentPane().add(secondaryTabbedPane);
 
         // Initialize the resourcePanel and its components
         resourcePanel = new JPanel();
@@ -1391,14 +1391,13 @@ public class App extends JFrame {
         
         // Initialize the secondaryTabbedPane and add the resourcePanel to it
 
-        secondaryTabbedPane = new JTabbedPane();
+        
         secondaryTabbedPane.addTab("Resources", resourcePanel);
         secondaryTabbedPane.addTab("Project Form", mainPanel);
         
         
 
-        // Add the secondaryTabbedPane to the mainTabbedPane
-        mainTabbedPane.addTab("Form Tab", secondaryTabbedPane);
+        
 
     }
 
@@ -1406,12 +1405,12 @@ public class App extends JFrame {
         ResourceManager resourceManager = new ResourceManager();
         ProjectManager projectManager = new ProjectManager();
         App frame = new App(resourceManager, projectManager);
-        frame.setSize(600, 500);
+        frame.setSize(600, 430);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    public void handleMaterialNewBtn() {
+    private void handleMaterialNewBtn() {
     	
     	for(int i =0; i< allTaskcheckBoxes.size(); i++) {
     		allTaskcheckBoxes.get(i).setSelected(false);
@@ -1444,7 +1443,7 @@ public class App extends JFrame {
         }
     }
 
-    public void handleSaveMaterialBtn() {
+    private void handleSaveMaterialBtn() {
         if (humanResourceRdb.isSelected()) {
 
             String name = humanNameTxt.getText().trim();
@@ -1587,7 +1586,7 @@ public class App extends JFrame {
         }
     }
 
-    public void handleResourceListChanges() {
+    private void handleResourceListChanges() {
         if (resourcesLst.getSelectedIndex() >= 0) {
             Resource resource = resourcesLst.getSelectedValue();
             if (resource.type.equals("Human")) {
