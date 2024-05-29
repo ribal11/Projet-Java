@@ -1,14 +1,15 @@
-import java.io.Serializable;
 
-public class MaterialUsage implements MaterialCostCalculator, Serializable, Comparable<MaterialUsage> {
-    static int next = 1;
+
+public class MaterialUsage extends ResourceUsage implements MaterialCostCalculator {
+    
     Material material;
-    int id;
+    
     int qty;
 
     public MaterialUsage(Material material, int qty) {
-        id = next++;
+        super();
         this.material = material;
+        this.material.addObserver(this);
         this.qty = qty;
 
     }
@@ -16,12 +17,25 @@ public class MaterialUsage implements MaterialCostCalculator, Serializable, Comp
     public double calculateTotalCost(int unitCost, double qty) {
         return unitCost * qty;
     }
-
-    public int compareTo(MaterialUsage other) {
-        return Integer.compare(this.id, other.id);
+    
+    public void setQty(int qty) {
+    	this.qty = qty;
+    	setChanged();
+    	notifyObservers();
     }
+    
 
     public String toString() {
-        return id + ", " + material.name + ", " + qty + ", " + calculateTotalCost(qty, material.unitCost);
+        return super.id + ", " + material.name + ", " + qty + ", " + calculateTotalCost(qty, material.unitCost);
+    }
+    
+    public void cleanUp() {
+    	this.material.removeObserver(this);
+    	setChanged();
+    	notifyObservers();
+    }
+    public void update() {
+    	setChanged();
+    	notifyObservers();
     }
 }

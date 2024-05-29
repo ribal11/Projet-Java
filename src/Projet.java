@@ -122,6 +122,18 @@ public class Projet extends MyObservable
             task.addObserverToProcesses();
         }
     }
+    
+    public void addTasksToSet(Set<Task> taskSet, Set<Process> processesSet,Set<HumanResourceUsage> humanUsage, Set<MaterialUsage> materialUsage) {
+    	Iterator<Task> itTask = this.tasks.iterator();
+    	int maxTaskId = 1;
+    	while(itTask.hasNext()) {
+    		Task task = itTask.next();
+    		taskSet.add(task);
+    		task.addProcessesToSet(processesSet, humanUsage, materialUsage);
+    		maxTaskId = Math.max(maxTaskId, task.id);
+    	}
+    	Task.next = maxTaskId + 1;
+    }
 
     public void updateProject() {
         calcCost();

@@ -1,7 +1,7 @@
 import java.io.Serializable;
 import java.util.Set;
 
-public abstract class Resource implements Serializable, Comparable<Resource> {
+public abstract class Resource extends MyObservable implements Serializable, Comparable<Resource> {
     static int next = 1;
     int id;
     String type;

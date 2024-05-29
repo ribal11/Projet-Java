@@ -63,6 +63,20 @@ public class Task extends MyObservable
     		
     	}
     }
+    
+    public void addProcessesToSet(Set<Process> processSet, Set<HumanResourceUsage> humanUsage, Set<MaterialUsage> materialUsage) {
+    	Iterator<Process> itProcess = this.processes.iterator();
+    	int maxProcessId = 1;
+    	while(itProcess.hasNext()) {
+    		Process process = itProcess.next();
+    		processSet.add(process);
+    		process.addResourcesToSet(humanUsage, materialUsage);
+    		maxProcessId = Math.max(maxProcessId, process.id);
+    		
+    	}
+    	
+    	Process.next = maxProcessId + 1;
+    }
 
     public void calcCost() {
         this.cost = 0;

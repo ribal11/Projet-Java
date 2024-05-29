@@ -19,12 +19,16 @@ public class HumanResource extends Resource {
         super(id, "Human", name, tasksAllowed);
         this.speciality = speciality;
         this.job = job;
-        this.hourlyRate = hourlyRate;
-
+    }
+    
+    public void setHourlyRate(double hourlyRate) {
+    	this.hourlyRate = hourlyRate;
+    	setChanged();
+    	notifyObservers();
     }
 
-    public void updateHumanResources(String name, String spec, String job, double payNum, Set<String> tasks) {
-        this.hourlyRate = payNum;
+    public void updateHumanResources(String name, String spec, String job, Set<String> tasks) {
+        
         this.job = job;
         this.name = name;
         this.speciality = spec;

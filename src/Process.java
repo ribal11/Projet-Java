@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class Process extends MyObservable implements Comparable<Process>, Serializable, CalcCost {
+public class Process extends MyObservable implements Comparable<Process>, Serializable, CalcCost, MyObserver {
     static int next = 1;
     int id;
     String name;
@@ -40,8 +40,20 @@ public class Process extends MyObservable implements Comparable<Process>, Serial
     }
     
     public void cleanUp() {
-    	this.materials.clear();
-    	this.humanResources.clear();
+    	
+    	Iterator<HumanResourceUsage> itHuman = humanResources.iterator();
+    	Iterator<MaterialUsage> itMaterial = materials.iterator();
+    	while(itHuman.hasNext()) {
+    		HumanResourceUsage humanUsage = itHuman.next();
+    		humanUsage.removeObserver(this);
+    		itHuman.remove();
+    	}
+    	
+    	while(itMaterial.hasNext()) {
+    		MaterialUsage materialUsage = itMaterial.next();
+    		materialUsage.removeObserver(this);
+    		itMaterial.remove();
+    		}
     	setChanged();
     	notifyObservers();
     }
@@ -55,38 +67,44 @@ public class Process extends MyObservable implements Comparable<Process>, Serial
 
     public void addMaterialUsage(MaterialUsage materialUsage) {
         materials.add(materialUsage);
-        calcCost();
+        materialUsage.addObserver(this);
+        update();
     }
 
     public void addHumanResourceUsage(HumanResourceUsage humanResourceUsage) {
         humanResources.add(humanResourceUsage);
-        calcCost();
+        humanResourceUsage.addObserver(this);
+        update();
     }
-
-    public void updateHumanResourceUsage(HumanResourceUsage rec) {
-
-        for (HumanResourceUsage usage : humanResources) {
-            if (usage.id == rec.id) {
-                usage.labor = rec.labor;
-                usage.workingHour = rec.workingHour;
-                calcCost();
-                return;
-            }
-        }
-
+    
+    public void removeMaterialUsage(MaterialUsage materialUsage) {
+    	materials.remove(materialUsage);
+    	materialUsage.removeObserver(this);
+    	update();
     }
-
-    public void updateMaterialResourceUsage(MaterialUsage rec) {
-
-        for (MaterialUsage usage : materials) {
-            if (usage.id == rec.id) {
-                usage.material = rec.material;
-                usage.qty = rec.qty;
-
-                calcCost();
-            }
-        }
-
+    
+    public void removeHumanUsage(HumanResourceUsage humanResourceUsage) {
+    	humanResources.remove(humanResourceUsage);
+    	humanResourceUsage.removeObserver(this);
+    	update();
+    }
+    
+    public void addResourcesToSet(Set<HumanResourceUsage> humanUsageSet, Set<MaterialUsage> materialUsageSet) {
+    	Iterator<HumanResourceUsage> itHuman = this.humanResources.iterator();
+    	Iterator<MaterialUsage> itMaterial = this.materials.iterator();
+    	int maxResourceUsageId = 1;
+    	while(itHuman.hasNext()) {
+    		HumanResourceUsage humanResource = itHuman.next();
+    		humanUsageSet.add(humanResource);
+    		maxResourceUsageId = Math.max(maxResourceUsageId, humanResource.id);
+    	}
+    	while(itMaterial.hasNext()) {
+    		MaterialUsage materialUsage = itMaterial.next();
+    		materialUsageSet.add(materialUsage);
+    		maxResourceUsageId = Math.max(maxResourceUsageId, materialUsage.id);
+    	}
+    	
+    	ResourceUsage.next = maxResourceUsageId + 1;
     }
     
     public void setDuration(int duration) {
@@ -110,8 +128,13 @@ public class Process extends MyObservable implements Comparable<Process>, Serial
             HumanResourceUsage hum = itHumanResource.next();
             this.cost += hum.calcLaborCost(hum.workingHour, hum.labor.hourlyRate);
         }
-        setChanged();
-        notifyObservers();
+        
+    }
+    
+    public void update() {
+    	calcCost();
+    	setChanged();
+    	notifyObservers();
     }
 
     public String toString() {

@@ -1,4 +1,5 @@
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -38,6 +39,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.JTree;
+import javax.swing.ListModel;
 import javax.swing.JComboBox;
 
 public class App extends JFrame {
@@ -91,7 +93,7 @@ public class App extends JFrame {
     private DefaultListModel<Projet> projectLstMdl;
     private DefaultListModel<Task> tasksLstMdl;
     private Set<Projet> projectsSet, removedProjectsSet;
-    private Set<Task> tasksSet, removedTasksSet;
+    private Set<Task> tasksSet;
     private Projet prj;
     private Task task;
     
@@ -115,7 +117,7 @@ public class App extends JFrame {
     private JLabel titleProcessLbl,processNameLbl, processStateLbl,processIdLbl,processCostLbl,processDurationLbl;
     private JList<Process> processLst;
     private DefaultListModel<Process> processLstMdl;
-    private Set<Process> processesSet, removedProcessesSet;
+    private Set<Process> processesSet;
     private JPanel processActionPanel,processListPanel;
     private JButton processSaveBtn, processNewBtn;
     private JButton processAddResourcesBtn;
@@ -138,12 +140,21 @@ public class App extends JFrame {
     private JButton resourceUsableSaveBtn;
     private JButton btnNewButton;
     private JButton resourceUsableBackBtn;
-    private JComboBox<HumanResource> EmployeeComboBox;
+    private JComboBox<HumanResource> employeeComboBox;
     private JComboBox<Material> materialComboBox;
-    private DefaultListModel<HumanResourceUsage> employeeLstMdl;
-    private DefaultListModel<MaterialUsage> materialLstMdl;
-    private JList<HumanResourceUsage> employeeLst;
-    private JList<MaterialUsage> materialLst;
+    private DefaultComboBoxModel<HumanResource> employeeCmbMdl;
+    private DefaultComboBoxModel<Material> materialCmbMdl;
+    private DefaultListModel<ResourceUsage> employeeLstMdl;
+    private DefaultListModel<ResourceUsage> materialLstMdl;
+    private JList< ResourceUsage> resourceLst;
+    private JTextField nameMaterialUsableTxt;
+    private JTextField unitPriceMaterialUsageTxt;
+    private JTextField textField;
+    private CardLayout  resourceUsableCardLayout;
+    private JPanel ResourceUsablePanel,HumanUsablePanel,materialUsablePanel ;
+    private Set<HumanResourceUsage> humanUsageSet;
+    private Set<MaterialUsage> materialUsageSet;
+   
     public App(ResourceManager resourceManager, ProjectManager projectManager) {
 
         super("Project Management");
@@ -156,16 +167,21 @@ public class App extends JFrame {
         projectLstMdl = new DefaultListModel<>();
         tasksLstMdl = new DefaultListModel<>();
         processLstMdl = new DefaultListModel<>();
+        employeeLstMdl = new DefaultListModel<>();
+        materialLstMdl = new DefaultListModel<>();
         humanResourceSet = new TreeSet<>();
         materialResourceSet = new TreeSet<>();
-        materialResourceSet = new TreeSet<>();
+        
         projectsSet = new TreeSet<>();
         removedProjectsSet = new TreeSet<>();
         tasksSet = new TreeSet<>();
-        removedTasksSet = new TreeSet<>();
-        processesSet = new TreeSet<>();
-        removedProcessesSet = new TreeSet<>();
         
+        processesSet = new TreeSet<>();
+        
+        humanUsageSet = new TreeSet<>();
+        materialUsageSet = new TreeSet<>();
+        employeeCmbMdl = new DefaultComboBoxModel<>();
+        materialCmbMdl = new DefaultComboBoxModel<>();
         readAll();
         mainTabbedPane = new JTabbedPane();
 
@@ -746,8 +762,9 @@ public class App extends JFrame {
         taskOptionsPanel.add(testTypeRdb);
         
         taskTypes.add(conceptionTypeRdb);
-        taskTypes.add(fabricationTypeRdb);
         taskTypes.add(rawMaterialTypeRdb);
+        taskTypes.add(fabricationTypeRdb);
+        
         taskTypes.add(assemblageTypeRdb);
         taskTypes.add(testTypeRdb);
         // create actions buttons for tasks
@@ -810,6 +827,7 @@ public class App extends JFrame {
         			
         		}
         		clearProcessForm();
+        		
         	cardLayout.show(mainPanel, "Processus");
         	}
         });
@@ -945,7 +963,12 @@ public class App extends JFrame {
         processAddResourcesBtn.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		
-        		cardLayout.show(mainPanel,"usableHumanFormPanel" );
+        		cardLayout.show(mainPanel,"Resources" );
+        		processAddResourcesBtn.setSelected(false);
+                populateHumanCmb();
+                populateMaterialCmb();
+                populateResourcesLstsMdls();
+                
         	}
         });
         processActionPanel.add(processAddResourcesBtn);
@@ -964,6 +987,11 @@ public class App extends JFrame {
         processActionPanel.add(processGoBackBtn);
         
         deleteProcessBtn = new JButton("DELETE");
+        deleteProcessBtn.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		deleteProcess();
+        	}
+        });
         deleteProcessBtn.setBounds(164, 11, 83, 40);
         processActionPanel.add(deleteProcessBtn);
         // end process page
@@ -981,19 +1009,86 @@ public class App extends JFrame {
         JLabel resourcesUsageTitleLbl = new JLabel("Resources");
         resourcesUsageTitleLbl.setFont(new Font("Segoe UI Symbol", Font.BOLD, 24));
         titleHumanUsagePanel.add(resourcesUsageTitleLbl);
+        //end title Panel
         
-        JPanel HumanUsablePanel = new JPanel();
-        HumanUsablePanel.setBounds(10, 110, 269, 182);
-        usableResourceFormPanel.add(HumanUsablePanel);
+        JPanel ResourceUsableOptionPanel = new JPanel();
+        ResourceUsableOptionPanel.setBounds(10, 64, 269, 42);
+        usableResourceFormPanel.add(ResourceUsableOptionPanel);
+        ResourceUsableOptionPanel.setLayout(null);
+        
+        JRadioButton humanUsableRdb = new JRadioButton("Human");
+        
+        ResourceUsableOptbuttonGroup.add(humanUsableRdb);
+        humanUsableRdb.setSelected(true);
+        humanUsableRdb.addItemListener(new ItemListener() {
+        	public void itemStateChanged(ItemEvent e) {
+        		if (humanUsableRdb.isSelected()) {
+        			resetMaterialPanel();
+        			resourceLst.setModel(employeeLstMdl);
+        			
+        			
+        			resourceUsableCardLayout.show(ResourceUsablePanel, "Human");
+        		}
+        		
+        	}
+        });
+        
+        humanUsableRdb.setBounds(6, 12, 72, 23);
+        ResourceUsableOptionPanel.add(humanUsableRdb);
+        
+        JRadioButton materialUsableRdb = new JRadioButton("Material");
+        ResourceUsableOptbuttonGroup.add(materialUsableRdb);
+        materialUsableRdb.addItemListener(new ItemListener() {
+        	public void itemStateChanged(ItemEvent e) {
+        		if (materialUsableRdb.isSelected()) {
+        			resetHumanPanel();
+        			resourceLst.setModel(materialLstMdl);
+        			
+        			
+        			
+        			resourceUsableCardLayout.show(ResourceUsablePanel, "Material");
+        		}
+        	}
+        });
+        materialUsableRdb.setBounds(80, 12, 78, 23);
+        ResourceUsableOptionPanel.add(materialUsableRdb);
+        
+        //end option panel
+        
+         resourceUsableCardLayout = new CardLayout();
+         ResourceUsablePanel = new JPanel(resourceUsableCardLayout);
+        ResourceUsablePanel.setBounds(10, 110, 269, 182);
+        usableResourceFormPanel.add(ResourceUsablePanel);
+         HumanUsablePanel = new JPanel();
+        
+        
         HumanUsablePanel.setLayout(null);
+        
         
         JLabel EmployeesLbl = new JLabel("Choose Employee");
         EmployeesLbl.setBounds(10, 14, 91, 23);
         HumanUsablePanel.add(EmployeesLbl);
         
-         EmployeeComboBox = new JComboBox();
-        EmployeeComboBox.setBounds(111, 11, 148, 28);
-        HumanUsablePanel.add(EmployeeComboBox);
+         employeeComboBox = new JComboBox<>(employeeCmbMdl);
+         employeeComboBox.setRenderer(new ResourceRenderer());
+        
+         employeeComboBox.addItemListener(new ItemListener() {
+        	 public void itemStateChanged(ItemEvent e) {
+        		 if (employeeComboBox.getSelectedIndex() > 0) {
+        			 HumanResource human = (HumanResource)employeeComboBox.getSelectedItem();
+        			 employeeNameTxt.setText(human.name);
+        			 employeeHourlyTxt.setText(String.valueOf(human.hourlyRate));
+        		 } else if (employeeComboBox.getSelectedIndex() == 0) {
+        			 employeeNameTxt.setText("");
+        			 employeeHourlyTxt.setText("");
+        			 workingHoursTxt.setText("");
+        		 }
+        		 resourceLst.clearSelection();
+        	 }
+         });
+         
+        employeeComboBox.setBounds(111, 11, 148, 28);
+        HumanUsablePanel.add(employeeComboBox);
         
         JLabel employeeNameLbl = new JLabel("Name");
         employeeNameLbl.setBounds(10, 63, 46, 23);
@@ -1021,44 +1116,273 @@ public class App extends JFrame {
         workingHoursTxt.setBounds(111, 135, 86, 25);
         HumanUsablePanel.add(workingHoursTxt);
         workingHoursTxt.setColumns(10);
+        ResourceUsablePanel.add(HumanUsablePanel, "Human");
+        resourceUsableCardLayout.show(ResourceUsablePanel, "Human");
         
-        JPanel ResourceUsableOptionPanel = new JPanel();
-        ResourceUsableOptionPanel.setBounds(10, 64, 269, 42);
-        usableResourceFormPanel.add(ResourceUsableOptionPanel);
-        ResourceUsableOptionPanel.setLayout(null);
+         materialUsablePanel = new JPanel();
+        materialUsablePanel.setLayout(null);
+        ResourceUsablePanel.add(materialUsablePanel,"Material");
         
-        JRadioButton humanUsableRdb = new JRadioButton("Human");
-        ResourceUsableOptbuttonGroup.add(humanUsableRdb);
-        humanUsableRdb.setBounds(6, 12, 72, 23);
-        ResourceUsableOptionPanel.add(humanUsableRdb);
+        JLabel nameMaterialUsableLbl = new JLabel("Name");
+        nameMaterialUsableLbl.setBounds(6, 58, 46, 25);
+        materialUsablePanel.add(nameMaterialUsableLbl);
         
-        JRadioButton materialUsableRdb = new JRadioButton("Material");
-        ResourceUsableOptbuttonGroup.add(materialUsableRdb);
-        materialUsableRdb.setBounds(80, 12, 78, 23);
-        ResourceUsableOptionPanel.add(materialUsableRdb);
+        nameMaterialUsableTxt = new JTextField();
+        nameMaterialUsableTxt.setEnabled(false);
+        nameMaterialUsableTxt.setBounds(86, 58, 173, 25);
+        materialUsablePanel.add(nameMaterialUsableTxt);
+        nameMaterialUsableTxt.setColumns(10);
+        
+        JLabel unitPriceMaterialUsageLbl = new JLabel("Unit Price");
+        unitPriceMaterialUsageLbl.setBounds(6, 105, 70, 25);
+        materialUsablePanel.add(unitPriceMaterialUsageLbl);
+        
+        unitPriceMaterialUsageTxt = new JTextField();
+        unitPriceMaterialUsageTxt.setEnabled(false);
+        unitPriceMaterialUsageTxt.setBounds(86, 105, 67, 25);
+        materialUsablePanel.add(unitPriceMaterialUsageTxt);
+        unitPriceMaterialUsageTxt.setColumns(10);
+        
+        JLabel chooseMaterialLbl = new JLabel("Choose Material");
+        chooseMaterialLbl.setBounds(6, 11, 99, 25);
+        materialUsablePanel.add(chooseMaterialLbl);
+        
+        materialComboBox = new JComboBox<>(materialCmbMdl);
+        materialComboBox.setRenderer(new ResourceRenderer());
+        
+       
+        materialComboBox.addItemListener(new ItemListener() {
+        	public void itemStateChanged(ItemEvent e) {
+        		
+            		 if (materialComboBox.getSelectedIndex() > 0) {
+            			 Material material = (Material)materialComboBox.getSelectedItem();
+            			 nameMaterialUsableTxt.setText(material.name);
+            			 unitPriceMaterialUsageTxt.setText(String.valueOf(material.unitCost));
+            		 } else if (materialComboBox.getSelectedIndex() == 0) {
+            			 nameMaterialUsableTxt.setText("");
+            			 unitPriceMaterialUsageTxt.setText("");
+            			 textField.setText("");
+            			 
+            		 }
+            		 resourceLst.clearSelection();
+            	 
+        	}
+        });
+        materialComboBox.setBounds(115, 8, 154, 30);
+        materialUsablePanel.add(materialComboBox);
+        
+        JLabel qtyMaterialLbl = new JLabel("Quantity");
+        qtyMaterialLbl.setBounds(6, 146, 70, 25);
+        materialUsablePanel.add(qtyMaterialLbl);
+        
+        textField = new JTextField();
+        textField.setBounds(86, 146, 67, 25);
+        materialUsablePanel.add(textField);
+        textField.setColumns(10);
+        
+        
+        
         
         resourceUsableListPanel = new JPanel();
-        resourceUsableListPanel.setBounds(302, 110, 239, 182);
+        resourceUsableListPanel.setLayout(new BorderLayout());
+        resourceUsableListPanel.setBounds(289, 85, 252, 207);
+        resourceLst = new JList<>(employeeLstMdl);
+        resourceLst.setBorder(new TitledBorder("Usable Resource"));
+        resourceLst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        resourceLst.addListSelectionListener(new ListSelectionListener() {
+        	public void valueChanged(ListSelectionEvent e) {
+        		
+        			if (resourceLst.getSelectedIndex() >= 0) {
+        				if (humanUsableRdb.isSelected()) {
+        				HumanResourceUsage resource = (HumanResourceUsage)resourceLst.getSelectedValue();
+        				employeeNameTxt.setText(resource.labor.name);
+        		    	employeeHourlyTxt.setText(String.valueOf(resource.labor.hourlyRate));
+        		    	workingHoursTxt.setText(String.valueOf(resource.workingHour));
+        		    	
+        				
+        			} else {
+        				MaterialUsage resource = (MaterialUsage)resourceLst.getSelectedValue();
+        				nameMaterialUsableTxt.setText(resource.material.name);
+        		    	unitPriceMaterialUsageTxt.setText(String.valueOf(resource.material.unitCost));
+        		    	textField.setText(String.valueOf(resource.qty));
+        		    	
+        			}
+        			
+        		}
+        	}
+        });
+        JScrollPane resourceUsableScroll = new JScrollPane(resourceLst);
+        resourceUsableListPanel.add(resourceUsableScroll,BorderLayout.CENTER );
         usableResourceFormPanel.add(resourceUsableListPanel);
         
         actionResourceUsablePanel = new JPanel();
         actionResourceUsablePanel.setBounds(10, 302, 531, 48);
+        
         usableResourceFormPanel.add(actionResourceUsablePanel);
         actionResourceUsablePanel.setLayout(null);
         
         resourceUsableNewBtn = new JButton("NEW");
         resourceUsableNewBtn.setBounds(10, 0, 70, 40);
+        resourceUsableNewBtn.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		if (resourceLst.getSelectedIndex() >= 0) {
+        			resourceLst.clearSelection();}
+        		
+        			if (humanUsableRdb.isSelected()) {
+        				employeeNameTxt.setText("");
+        		    	employeeHourlyTxt.setText("");
+        		    	workingHoursTxt.setText("");
+        		    	employeeComboBox.setSelectedIndex(0);
+        			}else {
+        				nameMaterialUsableTxt.setText("");
+        		    	unitPriceMaterialUsageTxt.setText("");
+        		    	textField.setText("");
+        				materialComboBox.setSelectedIndex(0);
+        		    	
+        			}
+        		
+        	}
+        });
         actionResourceUsablePanel.add(resourceUsableNewBtn);
         
         resourceUsableSaveBtn = new JButton("SAVE");
         resourceUsableSaveBtn.setBounds(90, 0, 70, 40);
+        resourceUsableSaveBtn.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		if (humanUsableRdb.isSelected()) {
+        			
+        			if ( !workingHoursTxt.getText().isEmpty()  ) {
+        				int workingHours = 0;
+        				try {
+        					 workingHours = Integer.parseInt(workingHoursTxt.getText());
+        					if (workingHours <= 0) {
+        						JOptionPane.showMessageDialog(null, "Please enter a positive integer grater than 0", "Error",
+           		                     JOptionPane.ERROR_MESSAGE);
+        						return;
+        					}
+        					if (workingHours > taskLst.getSelectedValue().duration ) {
+        						throw new  OutOfBoundWorkingTime("The working time have to be lower or equal than the process duration");
+        					}
+        				} catch(OutOfBoundWorkingTime ex) {
+        					JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
+        		                     JOptionPane.ERROR_MESSAGE);
+        					return;
+        				} catch(Exception ex) {
+        					JOptionPane.showMessageDialog(null, "Please enter a number", "Error",
+       		                     JOptionPane.ERROR_MESSAGE);
+        					return;
+        				}
+        				if (resourceLst.getSelectedIndex() >= 0) {
+        					HumanResourceUsage human = (HumanResourceUsage)resourceLst.getSelectedValue();
+        					human.setWorkingHour(workingHours);
+        				} else {
+        					
+        					HumanResource human =(HumanResource) employeeComboBox.getSelectedItem();
+        					
+        					HumanResourceUsage humanResource = new HumanResourceUsage(workingHours,human); 
+        					if(humanUsageSet.add(humanResource)) {
+        						processLst.getSelectedValue().addHumanResourceUsage(humanResource);
+        					    employeeLstMdl.addElement(humanResource);
+        					    employeeCmbMdl.removeElement(human);
+        					}
+        					
+        					
+        				}
+        				resourceLst.clearSelection();
+        				
+    					employeeNameTxt.setText("");
+        		    	employeeHourlyTxt.setText("");
+        		    	workingHoursTxt.setText("");
+        		    	employeeComboBox.setSelectedIndex(0);
+        			} else {
+        				if (employeeNameTxt.getText().isEmpty() ||  employeeHourlyTxt.getText().isEmpty()) {
+        					JOptionPane.showMessageDialog(null, "Please choose an Employee", "Error",JOptionPane.ERROR_MESSAGE);
+        					return;
+        				}
+        				JOptionPane.showMessageDialog(null, "Please fill all the fields", "Error",
+      		                     JOptionPane.ERROR_MESSAGE);
+        				return;
+        			}
+        		} else {
+        			if(  nameMaterialUsableTxt.getText().isEmpty()) {
+        				JOptionPane.showMessageDialog(null, "Please Choose a material", "Error",
+    		                     JOptionPane.ERROR_MESSAGE);
+       				return;
+        			}
+        			if (textField.getText().isEmpty() ) {
+        				JOptionPane.showMessageDialog(null, "Please fill all the fields", "Error",
+     		                     JOptionPane.ERROR_MESSAGE);
+        				return;
+        			}
+        			int quantity = 0;
+        			try {
+        				quantity = Integer.parseInt(textField.getText());
+        				if (quantity <= 0) {
+        					JOptionPane.showMessageDialog(null, "Please enter a positive integer grater than 0", "Error",
+          		                     JOptionPane.ERROR_MESSAGE);
+        					return;
+        				}
+        			} catch(Exception ex) {
+        				JOptionPane.showMessageDialog(null, "Please enter a number", "Error",
+      		                     JOptionPane.ERROR_MESSAGE);
+       					return;
+        			}
+        			
+        			if(resourceLst.getSelectedIndex() >= 0) {
+        				MaterialUsage material = (MaterialUsage)resourceLst.getSelectedValue();
+        				material.setQty(quantity);
+        			} else {
+        				Material material =(Material) materialComboBox.getSelectedItem();
+    					
+    					MaterialUsage materialResource = new MaterialUsage(material,quantity); 
+    					if (materialUsageSet.add(materialResource)) {
+    						materialLstMdl.addElement(materialResource);
+    						
+    						processLst.getSelectedValue().addMaterialUsage(materialResource);
+    						materialCmbMdl.removeElement(material); 
+    					
+    					}
+        			}
+        			resourceLst.clearSelection();
+        			nameMaterialUsableTxt.setText("");
+       			 	unitPriceMaterialUsageTxt.setText("");
+       			 	textField.setText("");
+        			materialComboBox.setSelectedIndex(0);
+        		}
+        		
+        	}
+        });
         actionResourceUsablePanel.add(resourceUsableSaveBtn);
         
         btnNewButton = new JButton("DELETE");
-        btnNewButton.setBounds(170, 0, 70, 40);
+        btnNewButton.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		deleteResourceUsable();
+        	}
+        });
+        btnNewButton.setBounds(170, 0, 89, 40);
         actionResourceUsablePanel.add(btnNewButton);
         
         resourceUsableBackBtn = new JButton("<< BACK");
+        resourceUsableBackBtn.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e ) {
+        		if (humanUsableRdb.isSelected()) {
+        			resetHumanPanel();
+        		}else {
+        			humanUsableRdb.setSelected(true);
+        		}
+        			materialCmbMdl.removeAllElements();
+        			employeeCmbMdl.removeAllElements();
+        			resourceLst.clearSelection();
+        			employeeLstMdl.clear();
+        			materialLstMdl.clear();
+        			processAddResourcesBtn.setEnabled(false);
+        			cardLayout.show(mainPanel, "Processus");
+        			
+        			clearProcessForm();
+        		
+        	}
+        });
         resourceUsableBackBtn.setBounds(432, 0, 89, 40);
         actionResourceUsablePanel.add(resourceUsableBackBtn);
         
@@ -1088,6 +1412,11 @@ public class App extends JFrame {
     }
 
     public void handleMaterialNewBtn() {
+    	
+    	for(int i =0; i< allTaskcheckBoxes.size(); i++) {
+    		allTaskcheckBoxes.get(i).setSelected(false);
+    		allTaskcheckBoxes.get(i).setEnabled(true);
+    	}
         rawMaterialCheckBox.setEnabled(true);
         rawMaterialCheckBox.setSelected(false);
         conceptionCheckBox.setSelected(false);
@@ -1159,7 +1488,8 @@ public class App extends JFrame {
                 if (resourcesLst.getSelectedIndex() >= 0) {
                     Resource rec = resourcesLst.getSelectedValue();
                     humanRc = (HumanResource) rec;
-                    humanRc.updateHumanResources(name, spec, job, payNum, tasks);
+                    humanRc.updateHumanResources(name, spec, job, tasks);
+                    humanRc.setHourlyRate(payNum);
                     resourcesLst.clearSelection();
                 } else {
                     humanRc = new HumanResource(name, spec, job, payNum, tasks);
@@ -1174,6 +1504,7 @@ public class App extends JFrame {
                 hourlyPayTxt.setText("");
                 for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
                     allTaskcheckBoxes.get(i).setSelected(false);
+                    allTaskcheckBoxes.get(i).setEnabled(true);
                 }
 
             }
@@ -1221,7 +1552,8 @@ public class App extends JFrame {
                     Resource rec = resourcesLst.getSelectedValue();
                     mat = (Material) rec;
 
-                    mat.updateMaterialResources(name, type, costNum, desc, tasks);
+                    mat.updateMaterialResources(name, type, desc, tasks);
+                    mat.setUnitCost(costNum);
 
                     resourcesLst.clearSelection();
                 } else {
@@ -1243,9 +1575,11 @@ public class App extends JFrame {
                             allTaskcheckBoxes.get(i).setEnabled(false);
                         } else {
                             allTaskcheckBoxes.get(i).setSelected(false);
+                            allTaskcheckBoxes.get(i).setEnabled(true);
                         }
                     } else {
                         allTaskcheckBoxes.get(i).setSelected(false);
+                        allTaskcheckBoxes.get(i).setEnabled(true);
                     }
                 }
 
@@ -1274,6 +1608,23 @@ public class App extends JFrame {
                         allTaskcheckBoxes.get(i).setSelected(false);
                     }
                 }
+                Iterator<HumanResourceUsage> itHmUsge = humanUsageSet.iterator();
+                boolean check = true;
+                while(itHmUsge.hasNext()) {
+                	if (itHmUsge.next().labor.id == humanResource.id) {
+                		for(int i = 0; i< allTasks.length; i++) {
+                			allTaskcheckBoxes.get(i).setEnabled(false);
+                			check = false;
+                		}
+                	}
+                }
+                if (check) {
+                	for(int i = 0; i< allTasks.length; i++) {
+            			allTaskcheckBoxes.get(i).setEnabled(true);
+            			
+            		}
+                }
+                
             } else {
                 Material materialResource = (Material) resource;
                 if (!materialResourceRdb.isSelected()) {
@@ -1283,7 +1634,7 @@ public class App extends JFrame {
                 materialNameTxt.setText(materialResource.name);
                 materialDescTxt.setText(materialResource.description);
                 materialCostTxt.setText(String.valueOf(materialResource.unitCost));
-                if (materialResource.materialType == "Raw material") {
+                if (materialResource.materialType.equals("Raw material") ) {
                     rawMaterialRdb.setSelected(true);
                 } else {
                     miscellaneousMaterialRdb.setSelected(true);
@@ -1295,7 +1646,33 @@ public class App extends JFrame {
                         allTaskcheckBoxes.get(i).setSelected(false);
                     }
                 }
+                boolean check = true;
+                Iterator<MaterialUsage> itMtUsge = materialUsageSet.iterator();
+                while(itMtUsge.hasNext()) {
+                	if (itMtUsge.next().material.id == materialResource.id) {
+                		for(int i = 0; i< allTasks.length; i++) {
+                			allTaskcheckBoxes.get(i).setEnabled(false);
+                			check = false;
+                		}
+                	}
+                }
+                if (check) {
+                	for(int i = 0; i< allTasks.length; i++) {
+                		if (rawMaterialRdb.isSelected()) {
+                			if (!allTasks[i].equals("rawMaterial") ) {
+                				allTaskcheckBoxes.get(i).setEnabled(true);
+                			}
+                		} else {
+                			allTaskcheckBoxes.get(i).setEnabled(true);
+                		}
+            			
+            			
+            		}
+                }
+                
             }
+            
+            
         }
     }
 
@@ -1320,6 +1697,7 @@ public class App extends JFrame {
                 Iterator<Material> it = materialResourceSet.iterator();
                 while (it.hasNext()) {
                     Material material = it.next();
+                    
                     materialResourceLstMdl.addElement(material);
                     ResourceId = Math.max(ResourceId, material.id); // Update id with the maximum value
                     resourceManager.addMaterial(material);
@@ -1391,7 +1769,8 @@ public class App extends JFrame {
                     Projet projet = it.next();
                     projectLstMdl.addElement(projet);
                     projet.addObserverToTasks();
-                    ProjId = Math.max(ResourceId, projet.projId); // Update id with the maximum value
+                    ProjId = Math.max(ProjId, projet.projId); // Update id with the maximum value
+                    projet.addTasksToSet(tasksSet, processesSet, humanUsageSet, materialUsageSet);
                     projectManager.addProject(projet);
                 }
             } catch (EOFException eof) {
@@ -1448,7 +1827,7 @@ public class App extends JFrame {
         try {
 
             File projectFile = new File("project.dat");
-            if (!removedProcessesSet.isEmpty() || !removedTasksSet.isEmpty() || !removedProjectsSet.isEmpty()) {
+            if ( !removedProjectsSet.isEmpty()) {
             	if (projectFile.exists()) {
             		projectFile.delete();
             	}
@@ -1495,17 +1874,33 @@ public class App extends JFrame {
     		itProcess = task.processes.iterator();
     		while(itProcess.hasNext()) {
     			process = itProcess.next();
+    			Iterator<HumanResourceUsage> itHumanUsage = process.humanResources.iterator();
+    			Iterator<MaterialUsage> itMaterialUsage = process.materials.iterator();
+    			while(itHumanUsage.hasNext()) {
+    				HumanResourceUsage human = itHumanUsage.next();
+    				if (humanUsageSet.remove(human)) {
+    					employeeLstMdl.removeElement(human);
+    				}
+    				human.cleanUp();
+    			}
+    			
+    			while(itMaterialUsage.hasNext()) {
+    				MaterialUsage material = itMaterialUsage.next();
+    				if (materialUsageSet.remove(material)) {
+    					materialLstMdl.removeElement(material);
+    				}
+    				material.cleanUp();
+    			}
     			process.cleanUp();
     			if (processesSet.remove(process)) {
-    				processLstMdl.removeElement(process);
-    				removedProcessesSet.add(process);
+    				processLstMdl.removeElement(process);    				
     			}
     			
     		}
     		task.cleanUp();
     		if (tasksSet.remove(task)) {
     			tasksLstMdl.removeElement(task);
-    			removedTasksSet.add(task);
+    			
     		}
     		
     	}
@@ -1567,19 +1962,66 @@ public class App extends JFrame {
     	Iterator<Process> itProcess = task.processes.iterator();
     	while(itProcess.hasNext()) {
     		process = itProcess.next();
+    		Iterator<HumanResourceUsage> itHumanUsage = process.humanResources.iterator();
+			Iterator<MaterialUsage> itMaterialUsage = process.materials.iterator();
+			while(itHumanUsage.hasNext()) {
+				HumanResourceUsage human = itHumanUsage.next();
+				if (humanUsageSet.remove(human)) {
+					employeeLstMdl.removeElement(human);
+				}
+				human.cleanUp();
+			}
+			
+			while(itMaterialUsage.hasNext()) {
+				MaterialUsage material = itMaterialUsage.next();
+				if (materialUsageSet.remove(material)) {
+					materialLstMdl.removeElement(material);
+				}
+				material.cleanUp();
+			}
 			process.cleanUp();
 			if (processesSet.remove(process)) {
 				processLstMdl.removeElement(process);
-				removedProcessesSet.add(process);
+				
 			}   		
     	}
     	task.cleanUp();
 		if (tasksSet.remove(task)) {
-			tasksLstMdl.removeElement(task);
-			removedTasksSet.add(task);
+			tasksLstMdl.removeElement(task);			
 		}
+		
 		prj.removeTask(task);	
 		clearTasksFields();
+    }
+    
+    private void deleteProcess() {
+    	process = processLst.getSelectedValue();
+    	task = taskLst.getSelectedValue();
+    	prj = projectLst.getSelectedValue();
+    	Iterator<HumanResourceUsage> itHumanUsage = process.humanResources.iterator();
+		Iterator<MaterialUsage> itMaterialUsage = process.materials.iterator();
+		while(itHumanUsage.hasNext()) {
+			HumanResourceUsage human = itHumanUsage.next();
+			if (humanUsageSet.remove(human)) {
+				employeeLstMdl.removeElement(human);
+			}
+			human.cleanUp();
+		}
+		
+		while(itMaterialUsage.hasNext()) {
+			MaterialUsage material = itMaterialUsage.next();
+			if (materialUsageSet.remove(material)) {
+				materialLstMdl.removeElement(material);
+			}
+			material.cleanUp();
+		}
+		process.cleanUp();
+		if (processesSet.remove(process)) {
+			processLstMdl.removeElement(process);			
+		}
+		task.removeProcess(process);
+		clearProcessForm();
+    	
     }
     
     private void clearProcessForm() {
@@ -1590,6 +2032,7 @@ public class App extends JFrame {
     	processCostTxt.setText("");
     	processIdTxt.setText("");
     	processLst.clearSelection();
+    	processAddResourcesBtn.setEnabled(false);
     }
     
     private void handleTaskListSelection() {
@@ -1661,12 +2104,16 @@ public class App extends JFrame {
 			processCostTxt.setText(String.valueOf(process.cost));
 			if (process.finished) {
 				finishedStateRdb.setSelected(true);
+				processAddResourcesBtn.setEnabled(false);
+			} else {
+				processAddResourcesBtn.setEnabled(true);
 			}
 			processIdTxt.setText(String.valueOf(process.id));
 			
 			if (process.humanResources.size() > 0 || process.materials.size() > 0) {
 				finishedStateRdb.setEnabled(true);
 			}
+			
 		}
     }
     
@@ -1715,5 +2162,107 @@ public class App extends JFrame {
 		clearProcessForm();
 		
 	
+    }
+    
+    private void resetMaterialPanel() {
+    	nameMaterialUsableTxt.setText("");
+    	unitPriceMaterialUsageTxt.setText("");
+    	textField.setText("");
+    	
+    }
+    
+    private void populateHumanCmb() {
+    	 employeeCmbMdl.addElement(new HumanResource("", "","",0,null));
+    	Iterator<HumanResource> itHuman = humanResourceSet.iterator();
+    	task = taskLst.getSelectedValue();
+    	while(itHuman.hasNext()) {
+    		boolean exists = false;
+    		HumanResource human = itHuman.next();
+    		process = processLst.getSelectedValue();
+    		for( String task: human.taskAllowed) {
+    			System.out.println(task);
+    		}
+    			if (human.taskAllowed.contains(task.type) ) {
+    				System.out.println(task.type);
+    				Iterator<HumanResourceUsage> itHumanResourceUsage = process.humanResources.iterator();
+    				while(itHumanResourceUsage.hasNext()) {
+    					HumanResource humanRs = itHumanResourceUsage.next().labor;
+    					System.out.println(humanRs.id + human.id);
+    					if (humanRs.id == human.id) {
+    						exists = true;
+    					}
+    				}
+    				if (!exists) {
+    					System.out.println(human);
+    					employeeCmbMdl.addElement(human);
+    				}
+    			};
+    		
+    		
+    	}
+    }
+    
+    private void resetHumanPanel() {
+    	employeeNameTxt.setText("");
+    	employeeHourlyTxt.setText("");
+    	workingHoursTxt.setText("");
+    	
+    }
+    
+    private void populateMaterialCmb() {
+    	materialCmbMdl.addElement(new Material("", "",0,"",null));
+    	Iterator<Material> itMaterial = materialResourceSet.iterator();
+    	task = taskLst.getSelectedValue();
+    	while(itMaterial.hasNext()) {
+    		boolean exists = false;
+    		Material material = itMaterial.next();
+    		process = processLst.getSelectedValue();
+    		if (material.taskAllowed.contains(task.type)) {
+    			Iterator<MaterialUsage> itMaterialUsage = process.materials.iterator();
+    			while(itMaterialUsage.hasNext()) {
+    				Material materialRs = itMaterialUsage.next().material;
+    				if (materialRs.id == material.id) {
+    					exists = true;
+    				}
+    			}
+    			if (!exists) {
+    				
+    				materialCmbMdl.addElement(material);
+    			}
+    		}
+    	}
+    }
+    
+    private void populateResourcesLstsMdls() {
+    	Process process = processLst.getSelectedValue();
+    	if (process.humanResources.size() > 0) {
+    		employeeLstMdl.addAll(process.humanResources);
+    		
+    	}
+    	if (process.materials.size() > 0) {
+    		materialLstMdl.addAll(process.materials);
+    	}
+    }
+    
+    public void deleteResourceUsable() {
+    	process = processLst.getSelectedValue();
+    	if (resourceLst.getSelectedValue() instanceof HumanResourceUsage ) {
+    		HumanResourceUsage human = (HumanResourceUsage)resourceLst.getSelectedValue();
+    		
+    		if (humanUsageSet.remove(human)) {
+    			
+    			process.removeHumanUsage(human);
+    			employeeLstMdl.removeElement(human);
+    			human.cleanUp();
+    		}
+    	} else {
+    		MaterialUsage material = (MaterialUsage)resourceLst.getSelectedValue();
+    		if(materialUsageSet.remove(material)) {
+    			
+    			materialLstMdl.removeElement(material);
+    			process.removeMaterialUsage(material);
+    			material.cleanUp();
+    		}
+    	}
     }
 }

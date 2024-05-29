@@ -20,13 +20,19 @@ public class Material extends Resource {
         this.description = description;
 
     }
+    
+    public void setUnitCost(double unitCost) {
+    	this.unitCost = unitCost;
+    	setChanged();
+    	notifyObservers();
+    }
+   
 
-    public void updateMaterialResources(String name, String type, double costNum, String desc, Set<String> tasks) {
+    public void updateMaterialResources(String name, String type, String desc, Set<String> tasks) {
         this.description = desc;
         this.materialType = type;
         this.name = name;
         this.taskAllowed = tasks;
-        this.unitCost = costNum;
     }
 
     public String toString() {
