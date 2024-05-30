@@ -19,6 +19,8 @@ public class HumanResource extends Resource {
         super(id, "Human", name, tasksAllowed);
         this.speciality = speciality;
         this.job = job;
+        setChanged();
+    	notifyObservers();
     }
     
     public void setHourlyRate(double hourlyRate) {

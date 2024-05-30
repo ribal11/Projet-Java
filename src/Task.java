@@ -30,6 +30,9 @@ public class Task extends MyObservable
         return Integer.compare(this.id, task.id);
     }
 
+    public String toComboBoxString() {
+    	return id+ ", " + name;
+    }
     public String toString() {
         return id + ", " + name + ", " + cost + ", " + state + ", " + duration + "h";
     }

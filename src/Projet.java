@@ -38,7 +38,9 @@ public class Projet extends MyObservable
     public int compareTo(Projet projet) {
         return Integer.compare(projId, projet.projId);
     }
-
+    public String toComboBoxString() {
+    	return this.projId + " " + this.name;
+    }
     public String toString() {
         return projId + ", " + name + ", " + state + ", " + cost + ", " + duration + "h";
     }

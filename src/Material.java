@@ -18,6 +18,8 @@ public class Material extends Resource {
         this.materialType = type;
         this.unitCost = unitCost;
         this.description = description;
+        setChanged();
+    	notifyObservers();
 
     }
     

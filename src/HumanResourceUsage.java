@@ -23,7 +23,10 @@ public class HumanResourceUsage extends ResourceUsage implements LaborCostCalcul
     }
 
     public String toString() {
-        return super.id + ", " + workingHour + ", " + labor.name + calcLaborCost(workingHour, labor.hourlyRate);
+        return super.id + ", " + workingHour + ", " + labor.name + ", " +  calcLaborCost(workingHour, labor.hourlyRate);
+    }
+    public String toComboBoxString() {
+    	return this.id + ", " + labor.name;
     }
     
     public void cleanUp() {

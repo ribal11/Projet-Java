@@ -140,4 +140,8 @@ public class Process extends MyObservable implements Comparable<Process>, Serial
     public String toString() {
         return this.id + ", " + this.cost + ", " + this.state + this.duration;
     }
+    
+    public String toComboBoxString() {
+    	return id + ", " + name;
+    }
 }
