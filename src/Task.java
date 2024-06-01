@@ -31,7 +31,7 @@ public class Task extends MyObservable
     }
 
     public String toComboBoxString() {
-    	return id+ ", " + name;
+    	return  name;
     }
     public String toString() {
         return id + ", " + name + ", " + cost + ", " + state + ", " + duration + "h";
@@ -118,9 +118,12 @@ public class Task extends MyObservable
 
     }
 
-    public void addObserverToProcesses() {
+    public void addObserverToProcesses(Set<HumanResource> humanResourceSet, Set<Material> materialResourceSet) {
         for (Process process : processes) {
+        	
             process.addObserver(this);
+            process.addObserverToHumanUsable(humanResourceSet);
+            process.addObserverToMaterialUsable(materialResourceSet);
         }
     }
     public void updateTask() {

@@ -1,4 +1,4 @@
 
-public interface MyObserver {
+ public interface MyObserver {
 	public abstract void update();
 }

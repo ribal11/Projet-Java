@@ -39,7 +39,7 @@ public class Projet extends MyObservable
         return Integer.compare(projId, projet.projId);
     }
     public String toComboBoxString() {
-    	return this.projId + " " + this.name;
+    	return  this.name;
     }
     public String toString() {
         return projId + ", " + name + ", " + state + ", " + cost + ", " + duration + "h";
@@ -118,10 +118,10 @@ public class Projet extends MyObservable
         this.finished = true;
 
     }
-    public void addObserverToTasks() {
+    public void addObserverToTasks(Set<HumanResource> humanResourceSet, Set<Material> materialResourceSet) {
         for (Task task : tasks) {
             task.addObserver(this);
-            task.addObserverToProcesses();
+            task.addObserverToProcesses(humanResourceSet,materialResourceSet );
         }
     }
     

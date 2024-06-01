@@ -89,6 +89,43 @@ public class Process extends MyObservable implements Comparable<Process>, Serial
     	update();
     }
     
+    public void addObserverToHumanUsable(Set<HumanResource> humanResourceSet) {
+    	Iterator<HumanResourceUsage> it = this.humanResources.iterator();
+    	while(it.hasNext()) {
+    		HumanResourceUsage human = it.next();
+    		human.addObserver(this);
+    		Iterator<HumanResource> itRc = humanResourceSet.iterator();
+    		
+    		
+    		while(itRc.hasNext()) {
+    			HumanResource humanRc = itRc.next();
+    			if (humanRc.id == human.labor.id) {
+    				human.addObserverToLabor(humanRc);
+    			}
+    			
+    		}
+    		
+    	}
+    }
+    
+    public void addObserverToMaterialUsable(Set<Material> materialResourceSet) {
+    	Iterator<MaterialUsage> it = this.materials.iterator();
+    	while(it.hasNext()) {
+    		MaterialUsage mt = it.next();
+    		mt.addObserver(this);
+    		Iterator<Material> itMt = materialResourceSet.iterator();
+    		
+    		
+    		while(itMt.hasNext()) {
+    			Material material = itMt.next();
+    			if (material.id == mt.material.id) {
+    				mt.addObserverToMaterial(material);
+    			}
+    			
+    		}
+    		
+    	}
+    }
     public void addResourcesToSet(Set<HumanResourceUsage> humanUsageSet, Set<MaterialUsage> materialUsageSet) {
     	Iterator<HumanResourceUsage> itHuman = this.humanResources.iterator();
     	Iterator<MaterialUsage> itMaterial = this.materials.iterator();
@@ -142,6 +179,6 @@ public class Process extends MyObservable implements Comparable<Process>, Serial
     }
     
     public String toComboBoxString() {
-    	return id + ", " + name;
+    	return  name;
     }
 }

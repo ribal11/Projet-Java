@@ -18,6 +18,12 @@ public class MaterialUsage extends ResourceUsage implements MaterialCostCalculat
         return unitCost * qty;
     }
     
+    public void addObserverToMaterial(Material mt) {
+    	this.material = mt;
+    	
+    	this.material.addObserver(this);
+    }
+    
     public void setQty(int qty) {
     	this.qty = qty;
     	setChanged();
@@ -33,6 +39,10 @@ public class MaterialUsage extends ResourceUsage implements MaterialCostCalculat
     	this.material.removeObserver(this);
     	setChanged();
     	notifyObservers();
+    }
+    
+    public String toComboBoxString() {
+    	return id + ", " + this.material.name;
     }
     public void update() {
     	setChanged();

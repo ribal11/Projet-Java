@@ -18,8 +18,8 @@ public class HumanResourceUsage extends ResourceUsage implements LaborCostCalcul
     
     public void setWorkingHour(int hours) {
     	this.workingHour = hours;
-    	setChanged();
-    	notifyObservers();
+    	super.setChanged();
+    	super.notifyObservers();
     }
 
     public String toString() {
@@ -29,14 +29,20 @@ public class HumanResourceUsage extends ResourceUsage implements LaborCostCalcul
     	return this.id + ", " + labor.name;
     }
     
+    public void addObserverToLabor(HumanResource humanRc) {
+    	this.labor = humanRc;
+    	this.labor.addObserver(this);
+    	
+    }
     public void cleanUp() {
     	this.labor.removeObserver(this);
-    	setChanged();
-    	notifyObservers();
+    	super.setChanged();
+    	super.notifyObservers();
     }
     
     public void update() {
-    	setChanged();
-    	notifyObservers();
+    	
+    	super.setChanged();
+    	super.notifyObservers();
     }
 }
