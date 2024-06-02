@@ -6,11 +6,12 @@ import javax.swing.ListCellRenderer;
 
 public class ResourceRenderer extends JLabel implements ListCellRenderer<Resource> {
     @Override
-    public Component getListCellRendererComponent(JList<? extends Resource> list, Resource value, int index, boolean isSelected, boolean cellHasFocus) {
+    public Component getListCellRendererComponent(JList<? extends Resource> list, Resource value, int index,
+            boolean isSelected, boolean cellHasFocus) {
         if (value != null) {
             setText(value.toComboBoxString());
         } else {
-        	setText(" ");
+            setText(" ");
         }
         if (isSelected) {
             setBackground(list.getSelectionBackground());
@@ -22,4 +23,4 @@ public class ResourceRenderer extends JLabel implements ListCellRenderer<Resourc
         setOpaque(true);
         return this;
     }
-} 
+}

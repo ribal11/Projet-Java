@@ -72,6 +72,7 @@ public class View extends JFrame implements MyObserver{
 	private Projet defaultProject = new Projet(" ");
 	private Task defaultTask = new Task(" "," ");
 	private Process defaultProcess = new Process(" ", 0);
+	private String title = "Projects";
 	public View(ProjectManager projectManager, ResourceManager resourceManager) {
 		this.projectManager = projectManager;
 		this.resourceManager = resourceManager;
@@ -263,6 +264,7 @@ public class View extends JFrame implements MyObserver{
 		humanUsableRdb.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (humanUsableRdb.isSelected()) {
+					changeTitle("Human Resource Usage") ;
 					process = (Process) processCmb.getSelectedItem();
 					populateTable(humanUsableCols, process.humanResources);
 				}
@@ -277,8 +279,11 @@ public class View extends JFrame implements MyObserver{
 		materialUsableRdb.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (materialUsableRdb.isSelected()) {
+					
 					process = (Process) processCmb.getSelectedItem();
 					populateTable(materialUsableCols, process.materials);
+					
+					changeTitle("Material Resource Usage");
 				}
 				
 				
@@ -288,7 +293,7 @@ public class View extends JFrame implements MyObserver{
 		
 		projectTablePanel = new JPanel();
 		projectTablePanel.setLayout(new BorderLayout());
-		projectTablePanel.setBorder(new TitledBorder("Projects Table"));
+		projectTablePanel.setBorder(new TitledBorder(title + " Table"));
 		
 		projectTablePanel.setBounds(25, 89, 580, 229);
 		projectTable = new JTable(projectTableMdl) {
@@ -346,6 +351,7 @@ public class View extends JFrame implements MyObserver{
 		projet = null;
 		task = null;
 		process = null;
+		boolean isHumanRdb = false;
 		
 		if(projectSet.isEmpty()) {
 			resetPage();	
@@ -360,17 +366,19 @@ public class View extends JFrame implements MyObserver{
 				
 				if(processCmb.getSelectedIndex() > 0) {
 					process = (Process) processCmb.getSelectedItem();
+					if (humanUsableRdb.isSelected()) {
+						isHumanRdb = true;
+					}
 					
 				}
 			}
 		}
 		
+		changeTitle("Projects");
 		resetPage();
 		updateComboBox(projetCmbMdl, projectSet, defaultProject );
 		
-//		if (projet == null || !projectSet.contains(projet) ) {
-//			populateTable(projectAndProcessCols, projectSet);
-//		}
+
 		if (projet != null && projectSet.contains(projet)) {
 			updateProject = true;
 			projectCmb.setSelectedItem(projet);
@@ -386,11 +394,23 @@ public class View extends JFrame implements MyObserver{
 					processCmbMdl.setSelectedItem(process);
 					
 					usableOptionPanel.setVisible(true);
-					humanUsableRdb.setSelected(true);
+					if (isHumanRdb) {
+						
+						humanUsableRdb.setSelected(true);	
+						changeTitle("Human Resource Usage");
+					} else {
+						materialUsableRdb.setSelected(true);
+						
+						changeTitle("Material Resource Usage");
+					}
+					
 				} else {
+					
+					changeTitle("Processes");
 					populateTable(projectAndProcessCols, task.processes);
 				}
 			} else {
+				changeTitle("Tasks");
 				populateTable(taskCols, projet.tasks);
 			}
 		}
@@ -420,9 +440,13 @@ public class View extends JFrame implements MyObserver{
 					projet = (Projet) projectCmb.getSelectedItem();
 					updateComboBox(taskCmbMdl, projet.tasks, defaultTask);
 					populateTable(taskCols, projet.tasks);
+					
+					changeTitle("Tasks");
 				} else {
 					taskCmb.setEnabled(false);
 					populateTable(projectAndProcessCols, projectSet);
+					
+					changeTitle("Projects");
 				}
 			} else if (e.getSource() == taskCmb) {
 				if (updateTask) {
@@ -435,10 +459,15 @@ public class View extends JFrame implements MyObserver{
 					task = (Task) taskCmb.getSelectedItem();
 					updateComboBox(processCmbMdl, task.processes, defaultProcess);					
 					populateTable(projectAndProcessCols, task.processes);
+					changeTitle("Processes");
+					
 				} else {
 					processCmb.setEnabled(false);
 					projet = (Projet)projectCmb.getSelectedItem();
-					populateTable(taskCols, projet.tasks);}
+					populateTable(taskCols, projet.tasks);
+				    changeTitle("Tasks");
+				    
+				}
 				}
 			 else if (e.getSource() == processCmb) {
 				if (updateProcess) {
@@ -450,6 +479,7 @@ public class View extends JFrame implements MyObserver{
 					usableOptionPanel.setVisible(true);
 					humanUsableRdb.setSelected(true);
 					
+					
 				} else  {
 					usableOptionPanel.setVisible(false);
 					resourceUsableBtnGroup.clearSelection();
@@ -457,6 +487,7 @@ public class View extends JFrame implements MyObserver{
 					task = (Task) taskCmb.getSelectedItem();
 					
 					populateTable(projectAndProcessCols, task.processes);
+					changeTitle("Processes");
 				}
 			 }
 			}
@@ -534,6 +565,12 @@ public class View extends JFrame implements MyObserver{
 			
 		}
 	}
+	private void changeTitle(String title) {
+        title = title + " Table";
+        TitledBorder border = (TitledBorder) projectTablePanel.getBorder();
+        border.setTitle(title);
+        projectTablePanel.repaint();  // Repaint the panel to reflect the new title
+    }
 }
 
 	

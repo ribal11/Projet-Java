@@ -49,7 +49,8 @@ public class Controller extends JFrame {
 
     ResourceManager resourceManager;
     ProjectManager projectManager;
-
+    
+    boolean isResourceLayoutSelected = false;
     int ResourceId = 0;
     int ProjId = 0;
     File f;
@@ -967,12 +968,14 @@ public class Controller extends JFrame {
         	public void actionPerformed(ActionEvent e) {
         		
         		cardLayout.show(mainPanel,"Resources" );
+        		isResourceLayoutSelected = true;
         		processAddResourcesBtn.setSelected(false);
         		
                 populateHumanCmb();
                 populateMaterialCmb();
                 populateResourcesLstsMdls();
                 btnNewButton.setEnabled(false);
+                deleteProcessBtn.setEnabled(false);
         	}
         });
         processActionPanel.add(processAddResourcesBtn);
@@ -984,6 +987,7 @@ public class Controller extends JFrame {
         		{
         			clearTasksFields();
         			processLstMdl.clear();
+        			deleteProcessBtn.setEnabled(false);
                 	cardLayout.show(mainPanel, "Tasks");
                 };
         	}
@@ -991,6 +995,7 @@ public class Controller extends JFrame {
         processActionPanel.add(processGoBackBtn);
         
         deleteProcessBtn = new JButton("DELETE");
+        deleteProcessBtn.setEnabled(false);
         deleteProcessBtn.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		deleteProcess();
@@ -1204,14 +1209,14 @@ public class Controller extends JFrame {
         				employeeNameTxt.setText(resource.labor.name);
         		    	employeeHourlyTxt.setText(String.valueOf(resource.labor.hourlyRate));
         		    	workingHoursTxt.setText(String.valueOf(resource.workingHour));
-        		    	
+        		    	employeeComboBox.setSelectedIndex(0);
         				
         			} else {
         				MaterialUsage resource = (MaterialUsage)resourceLst.getSelectedValue();
         				nameMaterialUsableTxt.setText(resource.material.name);
         		    	unitPriceMaterialUsageTxt.setText(String.valueOf(resource.material.unitCost));
         		    	textField.setText(String.valueOf(resource.qty));
-        		    	
+        		    	materialComboBox.setSelectedIndex(0);
         			}
         			
         		}
@@ -1389,6 +1394,7 @@ public class Controller extends JFrame {
         			cardLayout.show(mainPanel, "Processus");
         			btnNewButton.setEnabled(false);
         			clearProcessForm();
+        			isResourceLayoutSelected = false;
         		
         	}
         });
@@ -1409,13 +1415,16 @@ public class Controller extends JFrame {
                 JTabbedPane sourceTabbedPane = (JTabbedPane) e.getSource();
                 int selectedIndex = sourceTabbedPane.getSelectedIndex();
                 if (selectedIndex == 0) {
-                	resourceLst.clearSelection();
-                	 employeeNameTxt.setText("");
-                     employeeHourlyTxt.setText("");
-                     workingHoursTxt.setText("");
-                     nameMaterialUsableTxt.setText("");
-                     unitPriceMaterialUsageTxt.setText("");
-                     textField.setText("");
+                	if (isResourceLayoutSelected) {
+                		resourceLst.clearSelection();
+                   	    employeeNameTxt.setText("");
+                        employeeHourlyTxt.setText("");
+                        workingHoursTxt.setText("");
+                        nameMaterialUsableTxt.setText("");
+                        unitPriceMaterialUsageTxt.setText("");
+                        textField.setText("");
+                	}
+                	
                 }    
                 
             }
@@ -1515,6 +1524,11 @@ public class Controller extends JFrame {
                         resourceManager.addEmployee(humanRc);
                     }
                 }
+                
+                if (isResourceLayoutSelected) {
+                	employeeCmbMdl.removeAllElements();
+                	populateHumanCmb();
+                }
                 humanNameTxt.setText("");
                 specialityTxt.setText("");
                 jobTxt.setText("");
@@ -1580,25 +1594,29 @@ public class Controller extends JFrame {
                         resourceManager.addMaterial(mat);
                     }
                 }
-
+                if (isResourceLayoutSelected) {
+                	materialCmbMdl.removeAllElements();
+                	populateMaterialCmb();
+                }
                 materialNameTxt.setText("");
                 materialCostTxt.setText("");
                 materialDescTxt.setText("");
 
-                for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
-                    if (type == "Raw material") {
-                        if (allTasks[i] == "rawMaterial") {
-                            allTaskcheckBoxes.get(i).setSelected(true);
-                            allTaskcheckBoxes.get(i).setEnabled(false);
-                        } else {
-                            allTaskcheckBoxes.get(i).setSelected(false);
-                            allTaskcheckBoxes.get(i).setEnabled(true);
-                        }
-                    } else {
-                        allTaskcheckBoxes.get(i).setSelected(false);
-                        allTaskcheckBoxes.get(i).setEnabled(true);
-                    }
-                }
+//                for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
+//                    if (type == "Raw material") {
+//                        if (allTasks[i] == "rawMaterial") {
+//                            allTaskcheckBoxes.get(i).setSelected(true);
+//                            allTaskcheckBoxes.get(i).setEnabled(false);
+//                        } else {
+//                            allTaskcheckBoxes.get(i).setSelected(false);
+//                            allTaskcheckBoxes.get(i).setEnabled(true);
+//                        }
+//                    } else {
+//                        allTaskcheckBoxes.get(i).setSelected(false);
+//                        allTaskcheckBoxes.get(i).setEnabled(true);
+//                    }
+//                }
+                handleMaterialCheckboxes(type);
 
             }
         }
@@ -1691,6 +1709,23 @@ public class Controller extends JFrame {
             
             
         }
+    }
+    
+    private void handleMaterialCheckboxes(String type) {
+    	 for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
+             if (type.equals("Raw material")) {
+                 if (allTasks[i].equals("rawMaterial")) {
+                     allTaskcheckBoxes.get(i).setSelected(true);
+                     allTaskcheckBoxes.get(i).setEnabled(false);
+                 } else {
+                     allTaskcheckBoxes.get(i).setSelected(false);
+                     allTaskcheckBoxes.get(i).setEnabled(true);
+                 }
+             } else {
+                 allTaskcheckBoxes.get(i).setSelected(false);
+                 allTaskcheckBoxes.get(i).setEnabled(true);
+             }
+         }
     }
 
     private void readMaterialResources() {
@@ -1929,10 +1964,10 @@ public class Controller extends JFrame {
     		projectManager.removeProject(prj);
     	}
     	clearProjectFields();
-    	File projectFile = new File("project.dat");
-        if (projectFile.exists()) {
-            projectFile.delete();
-        }
+//    	File projectFile = new File("project.dat");
+//        if (projectFile.exists()) {
+//            projectFile.delete();
+//        }
     	
     }
 
@@ -2050,6 +2085,7 @@ public class Controller extends JFrame {
     	processIdTxt.setText("");
     	processLst.clearSelection();
     	processAddResourcesBtn.setEnabled(false);
+    	deleteProcessBtn.setEnabled(false);
     }
     
     private void handleTaskListSelection() {
@@ -2130,6 +2166,7 @@ public class Controller extends JFrame {
 			if (process.humanResources.size() > 0 || process.materials.size() > 0) {
 				finishedStateRdb.setEnabled(true);
 			}
+			deleteProcessBtn.setEnabled(true);
 			
 		}
     }
@@ -2198,7 +2235,7 @@ public class Controller extends JFrame {
     		process = processLst.getSelectedValue();
     		
     			if (human.taskAllowed.contains(task.type) ) {
-    				System.out.println(task.type);
+    				
     				Iterator<HumanResourceUsage> itHumanResourceUsage = process.humanResources.iterator();
     				while(itHumanResourceUsage.hasNext()) {
     					HumanResource humanRs = itHumanResourceUsage.next().labor;
