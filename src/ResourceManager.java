@@ -30,6 +30,22 @@ public class ResourceManager extends MyObservable implements Serializable, MyObs
         }
     }
     
+    public void removeMaterial(Material material) {
+    	if (materialManager.remove(material)) {
+    		material.removeObserver(this);
+    		setChanged();
+            notifyObservers();
+    	}
+    }
+    
+    public void removeEmployee(HumanResource emp) {
+    	if (employeeManager.remove(emp)) {
+    		emp.removeObserver(this);
+    		setChanged();
+            notifyObservers();
+    	}
+    }
+    
     public void update() {
     	setChanged();
     	notifyObservers();

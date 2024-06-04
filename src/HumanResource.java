@@ -14,14 +14,7 @@ public class HumanResource extends Resource {
 
     }
 
-    public HumanResource(int id, String name, String speciality, String job, double hourlyRate,
-            Set<String> tasksAllowed) {
-        super(id, "Human", name, tasksAllowed);
-        this.speciality = speciality;
-        this.job = job;
-        setChanged();
-    	notifyObservers();
-    }
+   
     
     public void setHourlyRate(double hourlyRate) {
     	this.hourlyRate = hourlyRate;

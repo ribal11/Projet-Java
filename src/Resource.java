@@ -8,11 +8,13 @@ public abstract class Resource extends MyObservable implements Serializable, Com
     String name;
     Set<String> taskAllowed;
 
-    public Resource(String type, String name, Set<String> taskAllowed) {
-        id = next++;
+    public Resource(String type, String name, Set<String> taskAllowed)throws EmptyFieldException, NoTasksAddedException  {
         this.type = type;
+        if (name.trim().isEmpty()) throw new EmptyFieldException("Please fill all the fields");
         this.name = name;
+        if (taskAllowed.isEmpty()) throw new NoTasksAddedException("Pleas choose at least one task");
         this.taskAllowed = taskAllowed;
+        id = next++;
     }
 
     public Resource(int id, String type, String name, Set<String> taskAllowed) {

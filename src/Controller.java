@@ -45,45 +45,50 @@ import javax.swing.ListModel;
 import javax.swing.JComboBox;
 
 public class Controller extends JFrame {
-    static final String[] allTasks = { "conception", "rawMaterial", "fabrication", "assemblage", "test" };
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private static final String[] allTasks = { "conception", "rawMaterial", "fabrication", "assemblage", "test" };
+	private final String[] jobs = {"","Tasks Employee", "Driver", "Manager"};
 
     ResourceManager resourceManager;
-    ProjectManager projectManager;
+     ProjectManager projectManager;
     
-    boolean isResourceLayoutSelected = false;
-    int ResourceId = 0;
-    int ProjId = 0;
-    File f;
-    InputStream is;
-    OutputStream os;
-    ObjectInputStream ois;
-    ObjectOutputStream oos;
+    private boolean isResourceLayoutSelected = false;
+    private int ResourceId = 0;
+    private int ProjId = 0;
+  
 
-    Material mat;
-    HumanResource humanRc;
-    JTabbedPane  secondaryTabbedPane;
-    JRadioButton humanResourceRdb, materialResourceRdb, rawMaterialRdb, miscellaneousMaterialRdb;
-    ButtonGroup resourceGroup, materialGroup;
-    JLabel humanResourceLbl, materialResourceLbl, rawMaterialLbl, miscellaneousMaterialLbl, resourceNameLbl,
-            taskAllowdLbl, specialityLbl, jobLbl, hourlyPayLbl, materialCostLbl, conceptionLbl, fabricationLbl,
-            assemblageLbl, testLbl, materialDescLbl;
-    JTextField humanNameTxt, materialNameTxt, specialityTxt, jobTxt, hourlyPayTxt, materialCostTxt, materialDescTxt;
-    JCheckBox conceptionCheckBox, fabricationCheckBox, assemblageCheckBox, testCheckBox, rawMaterialCheckBox;
-    JList<Resource> resourcesLst;
-    DefaultListModel<Resource> humanResourceLstMdl, materialResourceLstMdl;
-    JButton saveResourceBtn, newResourceBtn, writeButton;
-    JPanel firstTabbedPanel, resourcePanel, humanResourcePanel, materialResourcePanel, resourceTypePanel,
+   private  Material mat;
+   private  HumanResource humanRc;
+   private  JTabbedPane  secondaryTabbedPane;
+   private  JRadioButton humanResourceRdb, materialResourceRdb, rawMaterialRdb, miscellaneousMaterialRdb;
+   private  ButtonGroup resourceGroup, materialGroup;
+   private  JLabel humanResourceLbl, materialResourceLbl, rawMaterialLbl, miscellaneousMaterialLbl, resourceNameLbl,
+            specialityLbl, jobLbl, hourlyPayLbl, materialCostLbl, 
+            materialDescLbl;
+   private  JTextField humanNameTxt, materialNameTxt, specialityTxt, hourlyPayTxt, materialCostTxt, materialDescTxt;
+   private  JCheckBox conceptionCheckBox, fabricationCheckBox, assemblageCheckBox, testCheckBox, rawMaterialCheckBox;
+   private  JList<Resource> resourcesLst;
+   private  DefaultListModel<Resource> humanResourceLstMdl, materialResourceLstMdl;
+   private  JButton saveResourceBtn, newResourceBtn, writeButton, deleteResourceBtn;
+   private  JPanel  resourcePanel, humanResourcePanel, materialResourcePanel, resourceTypePanel,
             resourceListPanel, allowedTaskPanel, actionsResourcePanel;
+   private JComboBox<String> jobsCmb;
+   private DefaultComboBoxModel<String> jobCmbMdl;
 
-    Set<HumanResource> humanResourceSet;
-    Set<Material> materialResourceSet;
-    List<JCheckBox> allTaskcheckBoxes;
-
+   private  Set<HumanResource> humanResourceSet;
+   private  Set<Material> materialResourceSet;
+   private  List<JCheckBox> allTaskcheckBoxes;
+   private  Set<HumanResource> removedEmps;
+   private  Set<Material> removedMats;
     // end Resources form
     // ###############################################################################################################################
-     String title = "Create Project";
+     
     private JPanel mainPanel, projectFormPanel,  createProjectPanel, formTitlePanel, projectListPanel,
-            projectActionPanel, createTaskPanel, formTaskPanel, taskListPanel, taskActionPanel, taskGoBackPanel,
+            projectActionPanel, createTaskPanel, formTaskPanel, taskListPanel, taskActionPanel,
             taskTitlePanel;
     private JLabel prjNameLbl, prjStateLbl, prjCostLbl, prjDurationLbl, projectTitleLbl, projIdLbl, taskNameLbl, taskStateLbl,
             taskCostLbl, taskDurationLbl, taskIdLbl, taskTitleLbl;
@@ -159,6 +164,7 @@ public class Controller extends JFrame {
     private Set<MaterialUsage> materialUsageSet;
    private Material defaultMaterial =  new Material("", "",0,"",null);
    private HumanResource defaultHuman = new HumanResource("", "","",0,null);
+   
     public Controller(ResourceManager resourceManager, ProjectManager projectManager) {
 
         super("Project Management");
@@ -168,6 +174,8 @@ public class Controller extends JFrame {
         taskTypes = new ArrayList<>();
         humanResourceLstMdl = new DefaultListModel<>();
         materialResourceLstMdl = new DefaultListModel<>();
+        removedEmps = new TreeSet<>();
+        removedMats = new TreeSet<>();
         projectLstMdl = new DefaultListModel<>();
         tasksLstMdl = new DefaultListModel<>();
         processLstMdl = new DefaultListModel<>();
@@ -253,7 +261,7 @@ public class Controller extends JFrame {
                     resourcesLst.setModel(materialResourceLstMdl);
                     humanNameTxt.setText("");
                     specialityTxt.setText("");
-                    jobTxt.setText("");
+                    jobsCmb.setSelectedItem(0);
                     hourlyPayTxt.setText("");
 
                     rawMaterialRdb.setSelected(true);
@@ -303,22 +311,22 @@ public class Controller extends JFrame {
         humanResourcePanel.add(specialityTxt);
 
         jobLbl = new JLabel("Job");
-        jobLbl.setBounds(5, 80, 50, 25);
+        jobLbl.setBounds(5, 110, 50, 25);
         humanResourcePanel.add(jobLbl);
 
-        jobTxt = new JTextField();
-        jobTxt.setBounds(75, 80, 160, 25);
-        humanResourcePanel.add(jobTxt);
-
         hourlyPayLbl = new JLabel("Hourly Pay");
-        hourlyPayLbl.setBounds(5, 110, 70, 25);
+        hourlyPayLbl.setBounds(5, 80, 70, 25);
         humanResourcePanel.add(hourlyPayLbl);
 
         hourlyPayTxt = new JTextField();
-        hourlyPayTxt.setBounds(75, 110, 80, 25);
+        hourlyPayTxt.setBounds(75, 80, 80, 25);
         humanResourcePanel.add(hourlyPayTxt);
 
         resourcePanel.add(humanResourcePanel);
+        
+       jobsCmb = new JComboBox<>(jobs);
+        jobsCmb.setBounds(75, 110, 160, 22);
+        humanResourcePanel.add(jobsCmb);
 
         // Material resource Panel
 
@@ -443,7 +451,7 @@ public class Controller extends JFrame {
 
         actionsResourcePanel = new JPanel();
         actionsResourcePanel.setLayout(null);
-        actionsResourcePanel.setBounds(5, 260, 320, 45);
+        actionsResourcePanel.setBounds(5, 260, 515, 45);
 
         newResourceBtn = new JButton("NEW");
         newResourceBtn.setBounds(5, 5, 70, 40);
@@ -464,7 +472,7 @@ public class Controller extends JFrame {
         actionsResourcePanel.add(saveResourceBtn);
 
         writeButton = new JButton("WRITE ON DISK");
-        writeButton.setBounds(165, 5, 130, 40);
+        writeButton.setBounds(375, 5, 130, 40);
         writeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 writeOnDisk();
@@ -472,6 +480,42 @@ public class Controller extends JFrame {
         });
         actionsResourcePanel.add(writeButton);
         resourcePanel.add(actionsResourcePanel);
+        
+         deleteResourceBtn = new JButton("DELETE");
+        deleteResourceBtn.setBounds(165, 5, 89, 40);
+        deleteResourceBtn.setEnabled(false);
+        deleteResourceBtn.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		int result = JOptionPane.showConfirmDialog(
+                        null,
+                        "Are you sure you want to delete this item?",
+                        "Confirmation",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                    );
+        		if (result != JOptionPane.YES_NO_OPTION) return;
+        		if (humanResourceRdb.isSelected()) {
+        			HumanResource humanRc = (HumanResource) resourcesLst.getSelectedValue();
+        			humanResourceSet.remove(humanRc);
+        			humanResourceLstMdl.removeElement(humanRc);
+        			if (isResourceLayoutSelected) {
+        				populateHumanCmb();
+        			}
+        			resourceManager.removeEmployee(humanRc);
+        			removedEmps.add(humanRc);
+        		} else {
+        			Material mat = (Material) resourcesLst.getSelectedValue();
+        			materialResourceSet.remove(mat);
+        			materialResourceLstMdl.removeElement(mat);
+        			if (isResourceLayoutSelected) {
+        				populateMaterialCmb();
+        			}
+        			resourceManager.removeMaterial(mat);
+        			removedMats.add(mat);
+        		}
+        	}
+        });
+        actionsResourcePanel.add(deleteResourceBtn);
 
         // starting with the project Form
 
@@ -840,6 +884,15 @@ public class Controller extends JFrame {
         deleteTaskBtn = new JButton("DELETE");
         deleteTaskBtn.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
+        		int result = JOptionPane.showConfirmDialog(
+                        null,
+                        "Are you sure you want to delete this item?",
+                        "Confirmation",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                    );
+        		
+        		if (result != JOptionPane.YES_NO_OPTION)return;
         		deleteTask();
         	}
         });
@@ -998,6 +1051,15 @@ public class Controller extends JFrame {
         deleteProcessBtn.setEnabled(false);
         deleteProcessBtn.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
+        		int result = JOptionPane.showConfirmDialog(
+                        null,
+                        "Are you sure you want to delete this item?",
+                        "Confirmation",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                    );
+           	 
+           	 if (result != JOptionPane.YES_NO_OPTION)return;
         		deleteProcess();
         	}
         });
@@ -1093,6 +1155,7 @@ public class Controller extends JFrame {
         			 workingHoursTxt.setText("");
         		 }
         		 resourceLst.clearSelection();
+        		 btnNewButton.setEnabled(false);
         	 }
          });
          
@@ -1169,6 +1232,7 @@ public class Controller extends JFrame {
             			 Material material = (Material)materialComboBox.getSelectedItem();
             			 nameMaterialUsableTxt.setText(material.name);
             			 unitPriceMaterialUsageTxt.setText(String.valueOf(material.unitCost));
+            			 
             		 } else if (materialComboBox.getSelectedIndex() == 0) {
             			 nameMaterialUsableTxt.setText("");
             			 unitPriceMaterialUsageTxt.setText("");
@@ -1176,6 +1240,7 @@ public class Controller extends JFrame {
             			 
             		 }
             		 resourceLst.clearSelection();
+            		 btnNewButton.setEnabled(false);
             	 
         	}
         });
@@ -1202,9 +1267,10 @@ public class Controller extends JFrame {
         resourceLst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         resourceLst.addListSelectionListener(new ListSelectionListener() {
         	public void valueChanged(ListSelectionEvent e) {
-        		btnNewButton.setEnabled(true);
+        		
         			if (resourceLst.getSelectedIndex() >= 0) {
         				if (humanUsableRdb.isSelected()) {
+        					btnNewButton.setEnabled(true);
         				HumanResourceUsage resource = (HumanResourceUsage)resourceLst.getSelectedValue();
         				employeeNameTxt.setText(resource.labor.name);
         		    	employeeHourlyTxt.setText(String.valueOf(resource.labor.hourlyRate));
@@ -1212,13 +1278,14 @@ public class Controller extends JFrame {
         		    	employeeComboBox.setSelectedIndex(0);
         				
         			} else {
+        				btnNewButton.setEnabled(true);
         				MaterialUsage resource = (MaterialUsage)resourceLst.getSelectedValue();
         				nameMaterialUsableTxt.setText(resource.material.name);
         		    	unitPriceMaterialUsageTxt.setText(String.valueOf(resource.material.unitCost));
         		    	textField.setText(String.valueOf(resource.qty));
         		    	materialComboBox.setSelectedIndex(0);
         			}
-        			
+        				
         		}
         	}
         });
@@ -1371,6 +1438,15 @@ public class Controller extends JFrame {
         btnNewButton.setEnabled(false);
         btnNewButton.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
+        		int result = JOptionPane.showConfirmDialog(
+                        null,
+                        "Are you sure you want to delete this item?",
+                        "Confirmation",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                    );
+           	 
+           	 if (result != JOptionPane.YES_NO_OPTION)return;
         		deleteResourceUsable();
         	}
         });
@@ -1443,12 +1519,12 @@ public class Controller extends JFrame {
     		allTaskcheckBoxes.get(i).setSelected(false);
     		allTaskcheckBoxes.get(i).setEnabled(true);
     	}
-        rawMaterialCheckBox.setEnabled(true);
-        rawMaterialCheckBox.setSelected(false);
-        conceptionCheckBox.setSelected(false);
-        fabricationCheckBox.setSelected(false);
-        assemblageCheckBox.setSelected(false);
-        testCheckBox.setSelected(false);
+//        rawMaterialCheckBox.setEnabled(true);
+//        rawMaterialCheckBox.setSelected(false);
+//        conceptionCheckBox.setSelected(false);
+//        fabricationCheckBox.setSelected(false);
+//        assemblageCheckBox.setSelected(false);
+//        testCheckBox.setSelected(false);
         if (resourcesLst.getSelectedIndex() >= 0) {
             resourcesLst.clearSelection();
         }
@@ -1464,10 +1540,12 @@ public class Controller extends JFrame {
         } else {
             humanNameTxt.setText("");
             specialityTxt.setText("");
-            jobTxt.setText("");
+            jobsCmb.setSelectedIndex(0);
             hourlyPayTxt.setText("");
 
         }
+        
+        deleteResourceBtn.setEnabled(false);
     }
 
     private void handleSaveMaterialBtn() {
@@ -1475,7 +1553,7 @@ public class Controller extends JFrame {
 
             String name = humanNameTxt.getText().trim();
             String spec = specialityTxt.getText().trim();
-            String job = jobTxt.getText().trim();
+            String job = (String) jobsCmb.getSelectedItem();
             String pay = hourlyPayTxt.getText().trim();
             if (name.isEmpty() || spec.isEmpty() || job.isEmpty() || pay.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "please fill all the fields", "Error",
@@ -1489,6 +1567,27 @@ public class Controller extends JFrame {
                         JOptionPane.showMessageDialog(null, "Please enter a positive number", "Error",
                                 JOptionPane.ERROR_MESSAGE);
                         return;
+                    }
+                    
+                    if (job.equals("Driver")) {
+                    	if ( payNum < 10 || payNum > 50  ) {
+                    		JOptionPane.showMessageDialog(null, "Please enter a number between 10 and 50", "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                            return;
+                    	}
+                    } else if (job.equals("Tasks Employee ")) {
+                    	if (payNum < 20 || payNum > 70) {
+                    		JOptionPane.showMessageDialog(null, "Please enter a number between 20 and 70", "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                            return;
+                    	}
+                    	
+                    } else {
+                    	if (payNum < 40 || payNum > 100 ) {
+                    		JOptionPane.showMessageDialog(null, "Please enter a number between 40 and 100", "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                            return;
+                    	}
                     }
 
                 } catch (NumberFormatException ex) {
@@ -1522,6 +1621,7 @@ public class Controller extends JFrame {
                     if (humanResourceSet.add(humanRc)) {
                         humanResourceLstMdl.addElement(humanRc);
                         resourceManager.addEmployee(humanRc);
+                        
                     }
                 }
                 
@@ -1531,8 +1631,9 @@ public class Controller extends JFrame {
                 }
                 humanNameTxt.setText("");
                 specialityTxt.setText("");
-                jobTxt.setText("");
+                jobsCmb.setSelectedIndex(0);
                 hourlyPayTxt.setText("");
+                deleteResourceBtn.setEnabled(false);
                 for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
                     allTaskcheckBoxes.get(i).setSelected(false);
                     allTaskcheckBoxes.get(i).setEnabled(true);
@@ -1601,7 +1702,7 @@ public class Controller extends JFrame {
                 materialNameTxt.setText("");
                 materialCostTxt.setText("");
                 materialDescTxt.setText("");
-
+                deleteResourceBtn.setEnabled(false);
 //                for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
 //                    if (type == "Raw material") {
 //                        if (allTasks[i] == "rawMaterial") {
@@ -1633,7 +1734,14 @@ public class Controller extends JFrame {
 
                 humanNameTxt.setText(resource.name);
                 specialityTxt.setText(humanResource.speciality);
-                jobTxt.setText(humanResource.job);
+                if (humanResource.job.equals("Tasks Employee")) {
+                	jobsCmb.setSelectedIndex(1);
+                } else if (humanResource.job.equals("Driver")) {
+                	jobsCmb.setSelectedIndex(2);
+                } else {
+                	jobsCmb.setSelectedIndex(3);
+                }
+                
                 hourlyPayTxt.setText(String.valueOf(humanResource.hourlyRate));
 
                 for (int i = 0; i < allTasks.length; i++) {
@@ -1650,15 +1758,20 @@ public class Controller extends JFrame {
                 		for(int i = 0; i< allTasks.length; i++) {
                 			allTaskcheckBoxes.get(i).setEnabled(false);
                 			check = false;
+                			
                 		}
+                		deleteResourceBtn.setEnabled(false);
                 	}
                 }
                 if (check) {
+                	deleteResourceBtn.setEnabled(true);
                 	for(int i = 0; i< allTasks.length; i++) {
             			allTaskcheckBoxes.get(i).setEnabled(true);
             			
             		}
                 }
+                
+                
                 
             } else {
                 Material materialResource = (Material) resource;
@@ -1689,9 +1802,12 @@ public class Controller extends JFrame {
                 			allTaskcheckBoxes.get(i).setEnabled(false);
                 			check = false;
                 		}
+                		
+                		deleteResourceBtn.setEnabled(false);
                 	}
                 }
                 if (check) {
+                	deleteResourceBtn.setEnabled(true);
                 	for(int i = 0; i< allTasks.length; i++) {
                 		if (rawMaterialRdb.isSelected()) {
                 			if (!allTasks[i].equals("rawMaterial") ) {
@@ -1728,7 +1844,8 @@ public class Controller extends JFrame {
          }
     }
 
-    private void readMaterialResources() {
+    @SuppressWarnings("unchecked")
+	private void readMaterialResources() {
         ;
 
         try {
@@ -1766,7 +1883,8 @@ public class Controller extends JFrame {
 
     }
 
-    private void readHumanResource() {
+    @SuppressWarnings("unchecked")
+	private void readHumanResource() {
         try {
             File humanFile = new File("human.dat");
             if (!humanFile.exists()) {
@@ -1799,7 +1917,8 @@ public class Controller extends JFrame {
 
     }
 
-    private void readProjects() {
+    @SuppressWarnings("unchecked")
+	private void readProjects() {
         try {
             File projectFile = new File("project.dat");
             if (!projectFile.exists()) {
@@ -1846,6 +1965,11 @@ public class Controller extends JFrame {
         try {
             // Writing materialResourceSet
             File materialFile = new File("material.dat");
+            if(!removedMats.isEmpty()) {
+            	if (materialFile.exists()) {
+            		materialFile.delete();
+            	}
+            }
             if (!materialFile.exists()) {
                 materialFile.createNewFile();
             }
@@ -1863,6 +1987,11 @@ public class Controller extends JFrame {
         try {
             // Writing humanResourceSet
             File humanFile = new File("human.dat");
+            if (!removedEmps.isEmpty()) {
+            	if (humanFile.exists()) {
+            		humanFile.delete();
+            	}
+            }
             if (!humanFile.exists()) {
                 humanFile.createNewFile();
             }
@@ -1917,6 +2046,15 @@ public class Controller extends JFrame {
     }
     
     private void deleteProject() {
+    	 int result = JOptionPane.showConfirmDialog(
+                 null,
+                 "Are you sure you want to delete this item?",
+                 "Confirmation",
+                 JOptionPane.YES_NO_OPTION,
+                 JOptionPane.QUESTION_MESSAGE
+             );
+    	 
+    	 if (result != JOptionPane.YES_NO_OPTION)return;
     	prj = projectLst.getSelectedValue();
     	
     	Iterator<Task> itTask = prj.tasks.iterator();
@@ -2047,6 +2185,7 @@ public class Controller extends JFrame {
     }
     
     private void deleteProcess() {
+    	
     	process = processLst.getSelectedValue();
     	task = taskLst.getSelectedValue();
     	prj = projectLst.getSelectedValue();
