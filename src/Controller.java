@@ -1328,28 +1328,12 @@ public class Controller extends JFrame {
         resourceUsableSaveBtn.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		if (humanUsableRdb.isSelected()) {
-        			
-        			if ( !workingHoursTxt.getText().isEmpty()  ) {
-        				int workingHours = 0;
-        				try {
-        					 workingHours = Integer.parseInt(workingHoursTxt.getText());
-        					if (workingHours <= 0) {
-        						JOptionPane.showMessageDialog(null, "Please enter a positive integer grater than 0", "Error",
-           		                     JOptionPane.ERROR_MESSAGE);
-        						return;
-        					}
-        					if (workingHours > taskLst.getSelectedValue().duration ) {
-        						throw new  OutOfBoundWorkingTime("The working time have to be lower or equal than the process duration");
-        					}
-        				} catch(OutOfBoundWorkingTime ex) {
-        					JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
-        		                     JOptionPane.ERROR_MESSAGE);
-        					return;
-        				} catch(Exception ex) {
-        					JOptionPane.showMessageDialog(null, "Please enter a number", "Error",
-       		                     JOptionPane.ERROR_MESSAGE);
-        					return;
-        				}
+        			try {
+        				if (workingHoursTxt.getText().trim().isEmpty()) throw new EmptyFieldException("Please fill all the fields");
+        				if (employeeNameTxt.getText().isEmpty() ||  employeeHourlyTxt.getText().isEmpty()) throw new EmptyFieldException("Please choose an employee");
+        				int workingHours = Integer.parseInt(workingHoursTxt.getText());
+        				if (workingHours <= 0) throw new OutOfBoundWorkingTime("Please enter a positive integer grater than 0");
+        				if (workingHours > taskLst.getSelectedValue().duration )throw new  OutOfBoundWorkingTime("The working time have to be lower or equal than the process duration");
         				if (resourceLst.getSelectedIndex() >= 0) {
         					HumanResourceUsage human = (HumanResourceUsage)resourceLst.getSelectedValue();
         					human.setWorkingHour(workingHours);
@@ -1373,64 +1357,64 @@ public class Controller extends JFrame {
         		    	workingHoursTxt.setText("");
         		    	employeeComboBox.setSelectedIndex(0);
         		    	btnNewButton.setEnabled(false);
-        			} else {
-        				if (employeeNameTxt.getText().isEmpty() ||  employeeHourlyTxt.getText().isEmpty()) {
-        					JOptionPane.showMessageDialog(null, "Please choose an Employee", "Error",JOptionPane.ERROR_MESSAGE);
-        					return;
-        				}
-        				JOptionPane.showMessageDialog(null, "Please fill all the fields", "Error",
+        				
+        			} catch(EmptyFieldException ex) {
+        				JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
       		                     JOptionPane.ERROR_MESSAGE);
-        				return;
-        			}
-        		} else {
-        			if(  nameMaterialUsableTxt.getText().isEmpty()) {
-        				JOptionPane.showMessageDialog(null, "Please Choose a material", "Error",
-    		                     JOptionPane.ERROR_MESSAGE);
-       				return;
-        			}
-        			if (textField.getText().isEmpty() ) {
-        				JOptionPane.showMessageDialog(null, "Please fill all the fields", "Error",
-     		                     JOptionPane.ERROR_MESSAGE);
-        				return;
-        			}
-        			int quantity = 0;
-        			try {
-        				quantity = Integer.parseInt(textField.getText());
-        				if (quantity <= 0) {
-        					JOptionPane.showMessageDialog(null, "Please enter a positive integer grater than 0", "Error",
-          		                     JOptionPane.ERROR_MESSAGE);
-        					return;
-        				}
-        			} catch(Exception ex) {
-        				JOptionPane.showMessageDialog(null, "Please enter a number", "Error",
+       					return;
+        			} catch(NumberFormatException ex) {
+        				JOptionPane.showMessageDialog(null, "Please enter an integer", "Error",
+      		                     JOptionPane.ERROR_MESSAGE);
+       					return;
+        			} catch(OutOfBoundWorkingTime ex) {
+        				JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
       		                     JOptionPane.ERROR_MESSAGE);
        					return;
         			}
-        			
-        			if(resourceLst.getSelectedIndex() >= 0) {
-        				MaterialUsage material = (MaterialUsage)resourceLst.getSelectedValue();
-        				material.setQty(quantity);
-        			} else {
-        				Material material =(Material) materialComboBox.getSelectedItem();
-    					
-    					MaterialUsage materialResource = new MaterialUsage(material,quantity); 
-    					if (materialUsageSet.add(materialResource)) {
-    						materialLstMdl.addElement(materialResource);
-    						
-    						processLst.getSelectedValue().addMaterialUsage(materialResource);
-    						materialCmbMdl.removeElement(material); 
-    					
-    					}
-        			}
-        			resourceLst.clearSelection();
-        			nameMaterialUsableTxt.setText("");
-       			 	unitPriceMaterialUsageTxt.setText("");
-       			 	textField.setText("");
-        			materialComboBox.setSelectedIndex(0);
-        			btnNewButton.setEnabled(false);
+
+        		} else {
+        			try {
+        				if(nameMaterialUsableTxt.getText().isEmpty()) throw new EmptyFieldException("Please Choose a material");
+        				if (textField.getText().isEmpty() ) throw new EmptyFieldException("Please fill all the fields");
+        				int quantity = Integer.parseInt(textField.getText());
+        				if (quantity <= 0) throw new InvalidQuantityException("Please enter a positive integer");
+        				if(resourceLst.getSelectedIndex() >= 0) {
+            				MaterialUsage material = (MaterialUsage)resourceLst.getSelectedValue();
+            				material.setQty(quantity);
+            			} else {
+            				Material material =(Material) materialComboBox.getSelectedItem();
+        					
+        					MaterialUsage materialResource = new MaterialUsage(material,quantity); 
+        					if (materialUsageSet.add(materialResource)) {
+        						materialLstMdl.addElement(materialResource);
+        						
+        						processLst.getSelectedValue().addMaterialUsage(materialResource);
+        						materialCmbMdl.removeElement(material); 
+        					
+        					}
+            			}
+            			resourceLst.clearSelection();
+            			nameMaterialUsableTxt.setText("");
+           			 	unitPriceMaterialUsageTxt.setText("");
+           			 	textField.setText("");
+            			materialComboBox.setSelectedIndex(0);
+            			btnNewButton.setEnabled(false);
+            		
+        			}catch(EmptyFieldException ex) {
+        				JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
+     		                     JOptionPane.ERROR_MESSAGE);
+   					return;
+        			} catch(NumberFormatException ex) {
+        				JOptionPane.showMessageDialog(null, "Please enter an Integer", "Error",
+     		                     JOptionPane.ERROR_MESSAGE);
+   					return;
+        			} catch(InvalidQuantityException ex) {
+        				JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
+     		                     JOptionPane.ERROR_MESSAGE);
+   					return;
+        			}		
         		}
-        		
-        	}
+        	}	
         });
         actionResourceUsablePanel.add(resourceUsableSaveBtn);
         
@@ -1547,138 +1531,106 @@ public class Controller extends JFrame {
         
         deleteResourceBtn.setEnabled(false);
     }
+    
+    
 
     private void handleSaveMaterialBtn() {
         if (humanResourceRdb.isSelected()) {
-
-            String name = humanNameTxt.getText().trim();
-            String spec = specialityTxt.getText().trim();
-            String job = (String) jobsCmb.getSelectedItem();
-            String pay = hourlyPayTxt.getText().trim();
-            if (name.isEmpty() || spec.isEmpty() || job.isEmpty() || pay.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "please fill all the fields", "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            } else {
-                double payNum = 0;
+                           
                 try {
-                    payNum = Double.parseDouble(pay);
-                    if (payNum <= 0) {
-                        JOptionPane.showMessageDialog(null, "Please enter a positive number", "Error",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
+                	String name = humanNameTxt.getText().trim();
+                    String spec = specialityTxt.getText().trim();
+                    String job = (String) jobsCmb.getSelectedItem();
+                    String pay = hourlyPayTxt.getText().trim();
+                    if (name.isEmpty() || spec.isEmpty() || job.isEmpty() || pay.isEmpty()) throw new EmptyFieldException("Please fill all the fields");
+                    double payNum = Double.parseDouble(pay);
+                    
+                    if (payNum < 0) throw new OutOfBoundWorkingTime("Please enter a positive number");
                     
                     if (job.equals("Driver")) {
-                    	if ( payNum < 10 || payNum > 50  ) {
-                    		JOptionPane.showMessageDialog(null, "Please enter a number between 10 and 50", "Error",
-                                    JOptionPane.ERROR_MESSAGE);
-                            return;
-                    	}
-                    } else if (job.equals("Tasks Employee ")) {
-                    	if (payNum < 20 || payNum > 70) {
-                    		JOptionPane.showMessageDialog(null, "Please enter a number between 20 and 70", "Error",
-                                    JOptionPane.ERROR_MESSAGE);
-                            return;
-                    	}
+                    	if ( payNum < 10 || payNum > 50  ) throw new OutOfBoundWorkingTime("Please enter a number between 10 and 50"); 
+                    } else if (job.equals("Tasks Employee")) {
+                    	if (payNum < 20 || payNum > 70) throw new OutOfBoundWorkingTime("Please enter a number between 20 and 70");
                     	
                     } else {
-                    	if (payNum < 40 || payNum > 100 ) {
-                    		JOptionPane.showMessageDialog(null, "Please enter a number between 40 and 100", "Error",
-                                    JOptionPane.ERROR_MESSAGE);
-                            return;
-                    	}
+                    	if (payNum < 40 || payNum > 100 ) throw new OutOfBoundWorkingTime("Please enter a number between 40 and 100"); 
+                    }
+                    
+                    Set<String> tasks = new TreeSet<>();
+
+                    for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
+                        if (allTaskcheckBoxes.get(i).isSelected()) {
+                            tasks.add(allTasks[i]);
+                            
+                        }
+                    }
+                    if (tasks.isEmpty())throw new NoTasksAddedException("Please choose a task") ;
+                    if (resourcesLst.getSelectedIndex() >= 0) {
+                        Resource rec = resourcesLst.getSelectedValue();
+                        humanRc = (HumanResource) rec;
+                        humanRc.updateHumanResources(name, spec, job, tasks);
+                        humanRc.setHourlyRate(payNum);
+                        resourcesLst.clearSelection();
+                    } else {
+                        humanRc = new HumanResource(name, spec, job, payNum, tasks);
+                        if (humanResourceSet.add(humanRc)) {
+                            humanResourceLstMdl.addElement(humanRc);
+                            resourceManager.addEmployee(humanRc);
+                            
+                        }
+                    }
+                    
+                    if (isResourceLayoutSelected) {
+                    	employeeCmbMdl.removeAllElements();
+                    	populateHumanCmb();
+                    }
+                    humanNameTxt.setText("");
+                    specialityTxt.setText("");
+                    jobsCmb.setSelectedIndex(0);
+                    hourlyPayTxt.setText("");
+                    deleteResourceBtn.setEnabled(false);
+                    for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
+                        allTaskcheckBoxes.get(i).setSelected(false);
+                        allTaskcheckBoxes.get(i).setEnabled(true);
                     }
 
-                } catch (NumberFormatException ex) {
+                }catch(EmptyFieldException ex) {
+                	JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(null, "please enter a number", "Error",
                             JOptionPane.ERROR_MESSAGE);
                     return;
-                }
-
-                boolean noCheckboxChecked = true;
-                Set<String> tasks = new TreeSet<>();
-
-                for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
-                    if (allTaskcheckBoxes.get(i).isSelected()) {
-                        tasks.add(allTasks[i]);
-                        noCheckboxChecked = false;
-                    }
-                }
-                if (noCheckboxChecked) {
-                    JOptionPane.showMessageDialog(null, "Please choose a task", "Error",
+                }catch(OutOfBoundWorkingTime ex) {
+                	JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
                             JOptionPane.ERROR_MESSAGE);
                     return;
-                }
-                if (resourcesLst.getSelectedIndex() >= 0) {
-                    Resource rec = resourcesLst.getSelectedValue();
-                    humanRc = (HumanResource) rec;
-                    humanRc.updateHumanResources(name, spec, job, tasks);
-                    humanRc.setHourlyRate(payNum);
-                    resourcesLst.clearSelection();
-                } else {
-                    humanRc = new HumanResource(name, spec, job, payNum, tasks);
-                    if (humanResourceSet.add(humanRc)) {
-                        humanResourceLstMdl.addElement(humanRc);
-                        resourceManager.addEmployee(humanRc);
-                        
-                    }
-                }
-                
-                if (isResourceLayoutSelected) {
-                	employeeCmbMdl.removeAllElements();
-                	populateHumanCmb();
-                }
-                humanNameTxt.setText("");
-                specialityTxt.setText("");
-                jobsCmb.setSelectedIndex(0);
-                hourlyPayTxt.setText("");
-                deleteResourceBtn.setEnabled(false);
-                for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
-                    allTaskcheckBoxes.get(i).setSelected(false);
-                    allTaskcheckBoxes.get(i).setEnabled(true);
-                }
-
-            }
+                } catch(NoTasksAddedException ex) {
+                	JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }   
 
         } else {
-            String name = materialNameTxt.getText().trim();
-            String desc = materialDescTxt.getText().trim();
-            String cost = materialCostTxt.getText().trim();
-            if (name.isEmpty() || desc.isEmpty() || cost.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "please fill all the fields", "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            } else {
-                double costNum = 0;
-                try {
-                    costNum = Double.parseDouble(cost);
-                    if (costNum <= 0) {
-                        JOptionPane.showMessageDialog(null, "Please enter a positive number", "Error",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "please enter a number", "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                boolean noCheckboxChecked = true;
+        	try {
+        		String name = materialNameTxt.getText().trim();
+                String desc = materialDescTxt.getText().trim();
+                String cost = materialCostTxt.getText().trim();
+                if (name.isEmpty() || desc.isEmpty() || cost.isEmpty()) throw new EmptyFieldException("Please fill all the fields");
+                double costNum = Double.parseDouble(cost);
+                if (costNum <= 0) throw new OutOfBoundWorkingTime("Please enter a positive number");
+                
                 Set<String> tasks = new TreeSet<>();
 
                 for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
                     if (allTaskcheckBoxes.get(i).isSelected()) {
-                        tasks.add(allTasks[i]);
-                        noCheckboxChecked = false;
+                        tasks.add(allTasks[i]);                     
                     }
                 }
 
-                if (noCheckboxChecked) {
-                    JOptionPane.showMessageDialog(null, "Please choose a task", "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
+                if (tasks.isEmpty()) throw new NoTasksAddedException("Please choose a task") ;
                 String type = rawMaterialRdb.isSelected() ? "Raw material" : "miscellaneous";
                 if (resourcesLst.getSelectedIndex() >= 0) {
                     Resource rec = resourcesLst.getSelectedValue();
@@ -1703,25 +1655,28 @@ public class Controller extends JFrame {
                 materialCostTxt.setText("");
                 materialDescTxt.setText("");
                 deleteResourceBtn.setEnabled(false);
-//                for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
-//                    if (type == "Raw material") {
-//                        if (allTasks[i] == "rawMaterial") {
-//                            allTaskcheckBoxes.get(i).setSelected(true);
-//                            allTaskcheckBoxes.get(i).setEnabled(false);
-//                        } else {
-//                            allTaskcheckBoxes.get(i).setSelected(false);
-//                            allTaskcheckBoxes.get(i).setEnabled(true);
-//                        }
-//                    } else {
-//                        allTaskcheckBoxes.get(i).setSelected(false);
-//                        allTaskcheckBoxes.get(i).setEnabled(true);
-//                    }
-//                }
                 handleMaterialCheckboxes(type);
-
+        	} catch(EmptyFieldException ex) {
+            	JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "please enter a number", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }catch(OutOfBoundWorkingTime ex) {
+            	JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            } catch(NoTasksAddedException ex) {
+            	JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }  
             }
         }
-    }
+    
 
     private void handleResourceListChanges() {
         if (resourcesLst.getSelectedIndex() >= 0) {
@@ -2311,48 +2266,51 @@ public class Controller extends JFrame {
     }
     
     private void handleProcessSaveBtn() {
-    	String name = processNameTxt.getText();
-		boolean finishedState;
-		if (processingStateRdb.isSelected()) finishedState = false;
-		else  finishedState = true;
-		
-		if (name.isEmpty()  || processDurationTxt.getText().isEmpty()) {
-			JOptionPane.showMessageDialog(null, "Please Fill All The Fields", "Error",
+    	try {
+    		String name = processNameTxt.getText().trim();
+    		boolean finishedState;
+    		if (processingStateRdb.isSelected()) finishedState = false;
+    		else  finishedState = true;
+    		
+    		if (name.isEmpty()  || processDurationTxt.getText().trim().isEmpty()) throw new EmptyFieldException("Please Fill All The Fields");
+    		
+    		int duration = Integer.parseInt(processDurationTxt.getText());
+    		if (duration <= 0 ) throw new InvalidDurationException("Duration must be higher than 0");
+    		if (processLst.getSelectedIndex() >= 0) {
+    			process = processLst.getSelectedValue();
+    			process.setDuration(duration);
+    			if (finishedState) {
+    				process.finishProcess();
+    			} else {
+    				process.stillProcessing();
+    			}
+    			process.setName(name);
+    		} else {
+    			process = new Process(name, duration);
+    			if (processesSet.add(process)) {
+    				task.addProcess(process);
+    				processLstMdl.addElement(process);
+    			}
+    		}
+    		
+    		clearProcessForm();
+    		
+    	} catch(EmptyFieldException ex) {
+    		JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
 			return;
-		}
-		int duration = 0;
-		try {
-			 duration = Integer.parseInt(processDurationTxt.getText());
-			 if (duration <= 0) {
-				 JOptionPane.showMessageDialog(null, "Duration Higher than 0", "Error",
-                         JOptionPane.ERROR_MESSAGE);
-				 return;
-			 }
-		} catch(Exception ex) {
-			JOptionPane.showMessageDialog(null, "Duration Must Be Number", "Error",
+    	} catch(NumberFormatException ex) {
+    		JOptionPane.showMessageDialog(null, "Duration must be an integer", "Error",
                     JOptionPane.ERROR_MESSAGE);
 			return;
-		}
+    	} catch(InvalidDurationException ex) {
+    		JOptionPane.showMessageDialog(null, ex.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+			return;
+    	}
+    	
 		
-		if (processLst.getSelectedIndex() >= 0) {
-			process = processLst.getSelectedValue();
-			process.setDuration(duration);
-			if (finishedState) {
-				process.finishProcess();
-			} else {
-				process.stillProcessing();
-			}
-			process.setName(name);
-		} else {
-			process = new Process(name, duration);
-			if (processesSet.add(process)) {
-				task.addProcess(process);
-				processLstMdl.addElement(process);
-			}
-		}
 		
-		clearProcessForm();
 		
 	
     }

@@ -14,7 +14,7 @@ public class HumanResource extends Resource {
 
     }
 
-   
+ 
     
     public void setHourlyRate(double hourlyRate) {
     	this.hourlyRate = hourlyRate;
