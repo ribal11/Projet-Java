@@ -1,7 +1,7 @@
 import java.io.Serializable;
 
 public abstract class ResourceUsage extends MyObservable
-		implements Comparable<ResourceUsage>, Serializable, MyObserver {
+		implements Comparable<ResourceUsage>, Serializable, Observer {
 	/**
 	 * 
 	 */

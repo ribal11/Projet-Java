@@ -1,30 +1,32 @@
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 abstract class MyObservable {
     boolean changed;
-    java.util.List<MyObserver> observers;
-
+    List<Observer> observers;
+    
     public MyObservable() {
         changed = false;
-        observers = new ArrayList<MyObserver>();
+        
+        observers = new ArrayList<Observer>();
     }
 
     public void setChanged() {
         changed = true;
     }
 
-    public void addObserver(MyObserver ob) {
+    public void addObserver(Observer ob) {
         observers.add(ob);
     }
 
-    public void removeObserver(MyObserver ob) {
+    public void removeObserver(Observer ob) {
         observers.remove(ob);
     }
 
     public void notifyObservers() {
-        for (Iterator<MyObserver> it = observers.iterator(); it.hasNext();)
-            ((MyObserver) it.next()).update();
+        for (Iterator<Observer> it = observers.iterator(); it.hasNext();)
+            ((Observer) it.next()).update();
         changed = false;
     }
 }

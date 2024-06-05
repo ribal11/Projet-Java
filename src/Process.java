@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class Process extends MyObservable implements Comparable<Process>, Serializable, CalcCost, MyObserver {
+public class Process extends MyObservable implements Comparable<Process>, Serializable, CalcCost, Observer {
     static int next = 1;
     int id;
     String name;

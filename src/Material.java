@@ -10,7 +10,6 @@ public class Material extends Resource {
         this.description = description;
         this.materialType = type;
         this.unitCost = unitCost;
-
     }
 
     public Material(int id, String name, String type, double unitCost, String description, Set<String> taskAllowed) {

@@ -1,7 +1,7 @@
 import java.util.Set;
 import java.util.TreeSet;
 
-public class ProjectManager extends MyObservable implements MyObserver {
+public class ProjectManager extends MyObservable implements Observer {
     static int next = 100;
     int id;
     public Set<Projet> myProjects;

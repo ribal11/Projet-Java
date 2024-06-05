@@ -5,7 +5,7 @@ import java.util.TreeSet;
 import java.util.Iterator;
 
 public class Task extends MyObservable
-        implements Comparable<Task>, Serializable, CalcCost, CalcDuration, CheckState, MyObserver {
+        implements Comparable<Task>, Serializable, CalcCost, CalcDuration, CheckState, Observer {
     static int next = 1;
     int id;
     String name;

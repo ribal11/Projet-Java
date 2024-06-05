@@ -77,7 +77,7 @@ public class Controller extends JFrame {
    private  JPanel  resourcePanel, humanResourcePanel, materialResourcePanel, resourceTypePanel,
             resourceListPanel, allowedTaskPanel, actionsResourcePanel;
    private JComboBox<String> jobsCmb;
-   private DefaultComboBoxModel<String> jobCmbMdl;
+   
 
    private  Set<HumanResource> humanResourceSet;
    private  Set<Material> materialResourceSet;
@@ -400,7 +400,7 @@ public class Controller extends JFrame {
 
         resourceListPanel = new JPanel();
         resourceListPanel.setLayout(new BorderLayout());
-        resourceListPanel.setBounds(270, 45, 250, 140);
+        resourceListPanel.setBounds(270, 45, 276, 146);
 
         resourcesLst = new JList<>(humanResourceLstMdl);
         resourcesLst.setBorder(new TitledBorder("resources"));
@@ -2269,12 +2269,15 @@ public class Controller extends JFrame {
 				finishedStateRdb.setSelected(true);
 				processAddResourcesBtn.setEnabled(false);
 			} else {
+				processingStateRdb.setSelected(true);
 				processAddResourcesBtn.setEnabled(true);
 			}
 			processIdTxt.setText(String.valueOf(process.id));
 			
 			if (process.humanResources.size() > 0 || process.materials.size() > 0) {
 				finishedStateRdb.setEnabled(true);
+			} else {
+				finishedStateRdb.setEnabled(false);
 			}
 			deleteProcessBtn.setEnabled(true);
 			

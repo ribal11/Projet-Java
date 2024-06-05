@@ -7,7 +7,7 @@ public class HumanResourceUsage extends ResourceUsage implements LaborCostCalcul
         super();
         this.workingHour = workingHour;
         this.labor = labor;
-        this.labor.addObserver(this);
+        this.labor.addObserver(this);;
     }
 
     

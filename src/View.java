@@ -32,7 +32,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 
-public class View extends JFrame implements MyObserver{
+public class View extends JFrame implements Observer{
 	private ProjectManager projectManager;
 	private ResourceManager resourceManager;
 	private JScrollPane projectTableScrollPane, resourceTableScrollPane ;

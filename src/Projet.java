@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.TreeMap;
 public class Projet extends MyObservable
-        implements Comparable<Projet>, Serializable, CalcCost, CalcDuration, CheckState, MyObserver {
+        implements Comparable<Projet>, Serializable, CalcCost, CalcDuration, CheckState, Observer {
     static int next = 10;
    
     TreeMap<String, Boolean> possibleTasks ;

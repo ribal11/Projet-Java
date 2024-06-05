@@ -2,7 +2,7 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class ResourceManager extends MyObservable implements Serializable, MyObserver {
+public class ResourceManager extends MyObservable implements Serializable, Observer {
     static int next = 1;
     int id;
     Set<HumanResource> employeeManager;
