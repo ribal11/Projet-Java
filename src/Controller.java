@@ -498,11 +498,21 @@ public class Controller extends JFrame {
         			HumanResource humanRc = (HumanResource) resourcesLst.getSelectedValue();
         			humanResourceSet.remove(humanRc);
         			humanResourceLstMdl.removeElement(humanRc);
+        			
         			if (isResourceLayoutSelected) {
         				populateHumanCmb();
         			}
         			resourceManager.removeEmployee(humanRc);
         			removedEmps.add(humanRc);
+        			 humanNameTxt.setText("");
+                     specialityTxt.setText("");
+                     jobsCmb.setSelectedIndex(0);
+                     hourlyPayTxt.setText("");
+                     deleteResourceBtn.setEnabled(false);
+                     for (int i = 0; i < allTaskcheckBoxes.size(); i++) {
+                         allTaskcheckBoxes.get(i).setSelected(false);
+                         allTaskcheckBoxes.get(i).setEnabled(true);
+                     }
         		} else {
         			Material mat = (Material) resourcesLst.getSelectedValue();
         			materialResourceSet.remove(mat);
@@ -511,7 +521,13 @@ public class Controller extends JFrame {
         				populateMaterialCmb();
         			}
         			resourceManager.removeMaterial(mat);
+        			String type = rawMaterialRdb.isSelected() ? "Raw material" : "miscellaneous";
         			removedMats.add(mat);
+        			materialNameTxt.setText("");
+                    materialCostTxt.setText("");
+                    materialDescTxt.setText("");
+                    deleteResourceBtn.setEnabled(false);
+                    handleMaterialCheckboxes(type);
         		}
         	}
         });
