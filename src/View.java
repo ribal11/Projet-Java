@@ -264,7 +264,7 @@ public class View extends JFrame implements Observer{
 		humanUsableRdb.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (humanUsableRdb.isSelected()) {
-					changeTitle("Human Resource Usage") ;
+					changeTableTitle("Human Resource Usage") ;
 					process = (Process) processCmb.getSelectedItem();
 					populateTable(humanUsableCols, process.humanResources);
 				}
@@ -283,7 +283,7 @@ public class View extends JFrame implements Observer{
 					process = (Process) processCmb.getSelectedItem();
 					populateTable(materialUsableCols, process.materials);
 					
-					changeTitle("Material Resource Usage");
+					changeTableTitle("Material Resource Usage");
 				}
 				
 				
@@ -374,7 +374,7 @@ public class View extends JFrame implements Observer{
 			}
 		}
 		
-		changeTitle("Projects");
+		changeTableTitle("Projects");
 		resetPage();
 		updateComboBox(projetCmbMdl, projectSet, defaultProject );
 		
@@ -397,20 +397,20 @@ public class View extends JFrame implements Observer{
 					if (isHumanRdb) {
 						
 						humanUsableRdb.setSelected(true);	
-						changeTitle("Human Resource Usage");
+						changeTableTitle("Human Resource Usage");
 					} else {
 						materialUsableRdb.setSelected(true);
 						
-						changeTitle("Material Resource Usage");
+						changeTableTitle("Material Resource Usage");
 					}
 					
 				} else {
 					
-					changeTitle("Processes");
+					changeTableTitle("Processes");
 					populateTable(projectAndProcessCols, task.processes);
 				}
 			} else {
-				changeTitle("Tasks");
+				changeTableTitle("Tasks");
 				populateTable(taskCols, projet.tasks);
 			}
 		}
@@ -441,12 +441,12 @@ public class View extends JFrame implements Observer{
 					updateComboBox(taskCmbMdl, projet.tasks, defaultTask);
 					populateTable(taskCols, projet.tasks);
 					
-					changeTitle("Tasks");
+					changeTableTitle("Tasks");
 				} else {
 					taskCmb.setEnabled(false);
 					populateTable(projectAndProcessCols, projectSet);
 					
-					changeTitle("Projects");
+					changeTableTitle("Projects");
 				}
 			} else if (e.getSource() == taskCmb) {
 				if (updateTask) {
@@ -459,13 +459,13 @@ public class View extends JFrame implements Observer{
 					task = (Task) taskCmb.getSelectedItem();
 					updateComboBox(processCmbMdl, task.processes, defaultProcess);					
 					populateTable(projectAndProcessCols, task.processes);
-					changeTitle("Processes");
+					changeTableTitle("Processes");
 					
 				} else {
 					processCmb.setEnabled(false);
 					projet = (Projet)projectCmb.getSelectedItem();
 					populateTable(taskCols, projet.tasks);
-				    changeTitle("Tasks");
+				    changeTableTitle("Tasks");
 				    
 				}
 				}
@@ -487,7 +487,7 @@ public class View extends JFrame implements Observer{
 					task = (Task) taskCmb.getSelectedItem();
 					
 					populateTable(projectAndProcessCols, task.processes);
-					changeTitle("Processes");
+					changeTableTitle("Processes");
 				}
 			 }
 			}
@@ -560,12 +560,12 @@ public class View extends JFrame implements Observer{
 				projectTableMdl.addRow(new Object[] {humanRc.id, humanRc.labor.name, humanRc.labor.hourlyRate, humanRc.workingHour});
 			} else {
 				MaterialUsage materialRc = (MaterialUsage) el;
-				projectTableMdl.addRow(new Object[] {materialRc.id, materialRc.material.name, materialRc.material.type, materialRc.material.unitCost, materialRc.qty});
+				projectTableMdl.addRow(new Object[] {materialRc.id, materialRc.material.name, materialRc.material.materialType, materialRc.material.unitCost, materialRc.qty});
 			}
 			
 		}
 	}
-	private void changeTitle(String title) {
+	private void changeTableTitle(String title) {
         title = title + " Table";
         TitledBorder border = (TitledBorder) projectTablePanel.getBorder();
         border.setTitle(title);

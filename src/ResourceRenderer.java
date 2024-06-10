@@ -8,7 +8,7 @@ public class ResourceRenderer extends JLabel implements ListCellRenderer<Resourc
     @Override
     public Component getListCellRendererComponent(JList<? extends Resource> list, Resource value, int index,
             boolean isSelected, boolean cellHasFocus) {
-        if (value != null) {
+        if (value != null && !value.name.isEmpty()) {
             setText(value.toComboBoxString());
         } else {
             setText(" ");

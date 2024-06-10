@@ -357,8 +357,20 @@ public class Controller extends JFrame {
         miscellaneousMaterialRdb.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (miscellaneousMaterialRdb.isSelected()) {
-                    rawMaterialCheckBox.setSelected(false);
+                	if (resourcesLst.getSelectedIndex() >= 0) {
+                		Iterator<MaterialUsage> itMaterialUsage = materialUsageSet.iterator();
+                    	while(itMaterialUsage.hasNext()) {
+                    		MaterialUsage mat = itMaterialUsage.next();
+                    		if (mat.material.id == resourcesLst.getSelectedValue().id) {
+                    			return;
+                    		}
+                    	}
+                    	rawMaterialCheckBox.setSelected(false);
+                        rawMaterialCheckBox.setEnabled(true);
+                	}
+                	rawMaterialCheckBox.setSelected(false);
                     rawMaterialCheckBox.setEnabled(true);
+                    
                 }
             }
         });

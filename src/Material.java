@@ -35,6 +35,10 @@ public class Material extends Resource {
         this.name = name;
         this.taskAllowed = tasks;
     }
+    
+    public String toComboBoxString() {
+    	return this.name + "(" + this.materialType + ")";
+    }
 
     public String toString() {
         return super.toString() + materialType + ", " + "," + description + "," + unitCost;
