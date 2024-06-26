@@ -127,7 +127,11 @@ public class Projet extends MyObservable
     
     public void addTasksToSet(Set<Task> taskSet, Set<Process> processesSet,Set<HumanResourceUsage> humanUsage, Set<MaterialUsage> materialUsage) {
     	Iterator<Task> itTask = this.tasks.iterator();
+    	Iterator<Task> itTaskSet = taskSet.iterator();
     	int maxTaskId = 1;
+    	while(itTaskSet.hasNext()) {
+    		maxTaskId = itTaskSet.next().id;
+    	}
     	while(itTask.hasNext()) {
     		Task task = itTask.next();
     		taskSet.add(task);
@@ -135,6 +139,7 @@ public class Projet extends MyObservable
     		maxTaskId = Math.max(maxTaskId, task.id);
     	}
     	Task.next = maxTaskId + 1;
+    	System.out.println(Task.next);
     }
 
     public void updateProject() {

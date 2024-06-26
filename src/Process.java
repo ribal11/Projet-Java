@@ -129,7 +129,22 @@ public class Process extends MyObservable implements Comparable<Process>, Serial
     public void addResourcesToSet(Set<HumanResourceUsage> humanUsageSet, Set<MaterialUsage> materialUsageSet) {
     	Iterator<HumanResourceUsage> itHuman = this.humanResources.iterator();
     	Iterator<MaterialUsage> itMaterial = this.materials.iterator();
+    	Iterator<HumanResourceUsage> itHumanSet = humanUsageSet.iterator();
+    	Iterator<MaterialUsage> itMatSet = materialUsageSet.iterator();
+    	HumanResourceUsage h = null ;
+    	MaterialUsage mat = null;
     	int maxResourceUsageId = 1;
+    	while(itHumanSet.hasNext()) {
+    		h = itHumanSet.next();
+    		maxResourceUsageId = h.id;
+    	}
+    	while(itMatSet.hasNext()) {
+    	   mat = itMatSet.next();
+    	}
+    	if (mat != null && mat.id > maxResourceUsageId) {
+    		maxResourceUsageId = mat.id;
+    	}
+    	
     	while(itHuman.hasNext()) {
     		HumanResourceUsage humanResource = itHuman.next();
     		humanUsageSet.add(humanResource);
@@ -142,6 +157,7 @@ public class Process extends MyObservable implements Comparable<Process>, Serial
     	}
     	
     	ResourceUsage.next = maxResourceUsageId + 1;
+    	
     }
     
     public void setDuration(int duration) {

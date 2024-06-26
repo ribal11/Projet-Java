@@ -70,6 +70,10 @@ public class Task extends MyObservable
     public void addProcessesToSet(Set<Process> processSet, Set<HumanResourceUsage> humanUsage, Set<MaterialUsage> materialUsage) {
     	Iterator<Process> itProcess = this.processes.iterator();
     	int maxProcessId = 1;
+    	Iterator<Process> itProcessSet = processSet.iterator();
+    	while(itProcessSet.hasNext()) {
+    		maxProcessId = itProcessSet.next().id;
+    	}
     	while(itProcess.hasNext()) {
     		Process process = itProcess.next();
     		processSet.add(process);
@@ -79,6 +83,7 @@ public class Task extends MyObservable
     	}
     	
     	Process.next = maxProcessId + 1;
+    	
     }
 
     public void calcCost() {

@@ -1402,6 +1402,7 @@ public class Controller extends JFrame {
 
         		} else {
         			try {
+        				
         				if(nameMaterialUsableTxt.getText().isEmpty()) throw new EmptyFieldException("Please Choose a material");
         				if (textField.getText().isEmpty() ) throw new EmptyFieldException("Please fill all the fields");
         				int quantity = Integer.parseInt(textField.getText());
@@ -1418,7 +1419,8 @@ public class Controller extends JFrame {
         						
         						processLst.getSelectedValue().addMaterialUsage(materialResource);
         						materialCmbMdl.removeElement(material); 
-        					
+        					}else {
+        						System.out.print("id already added");
         					}
             			}
             			resourceLst.clearSelection();

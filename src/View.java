@@ -7,6 +7,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -145,12 +146,15 @@ public class View extends JFrame implements Observer{
                 return false;
             }
         };
-        
+        resourceTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         resourceTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
         	public void valueChanged(ListSelectionEvent e) {
+        		
         		if (!e.getValueIsAdjusting() && !resourceTable.getSelectionModel().isSelectionEmpty()) {
-        			int selectedRow = resourceTable.getSelectedRow();
+        			int selectedRow;
         			
+   				 	selectedRow = resourceTable.getSelectedRow();	
+        			 
         			if (humanResourceRdb.isSelected()) {
         				HumanResource human = null;
         				Iterator<HumanResource> itHuman = humanResourceSet.iterator();
@@ -191,7 +195,7 @@ public class View extends JFrame implements Observer{
         		}
         	}
         });
-        resourceTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
 	 
 		
 		resourceTableScrollPane = new JScrollPane(resourceTable);
@@ -330,22 +334,24 @@ public class View extends JFrame implements Observer{
 	}
 	
 	private void populateResourceTable() {
-		resourceTableMdl.setRowCount(0);
-		if(humanResourceRdb.isSelected()) {
-			
-			Iterator<HumanResource> itHuman = humanResourceSet.iterator();
-			while(itHuman.hasNext()) {
-				HumanResource human = itHuman.next();
-				resourceTableMdl.addRow(new Object[] {human.id,human.name, human.speciality, human.job, human.hourlyRate});
-			}
-		} else {
-			Iterator<Material> itMaterial = materialResourceSet.iterator();
-			while(itMaterial.hasNext()) {
-				Material material = itMaterial.next();
-				resourceTableMdl.addRow(new Object[] {material.id, material.name, material.materialType, material.description, material.unitCost});
-			}
-		}
+	    // Ensure this runs on the Event Dispatch Thread
+	    SwingUtilities.invokeLater(new Runnable() {
+	        public void run() {
+	            resourceTableMdl.setRowCount(0); // Clear existing rows
+
+	            if (humanResourceRdb.isSelected() && !humanResourceSet.isEmpty()) {
+	                for (HumanResource human : humanResourceSet) {
+	                    resourceTableMdl.addRow(new Object[] {human.id, human.name, human.speciality, human.job, human.hourlyRate});
+	                }
+	            } else if (!materialResourceSet.isEmpty()) {
+	                for (Material material : materialResourceSet) {
+	                    resourceTableMdl.addRow(new Object[] {material.id, material.name, material.materialType, material.description, material.unitCost});
+	                }
+	            }
+	        }
+	    });
 	}
+
 	
 	private void populateProjectPanel() {
 		projet = null;
@@ -519,7 +525,10 @@ public class View extends JFrame implements Observer{
 		
 		resourceUsableBtnGroup.clearSelection();
 		usableOptionPanel.setVisible(false);
-		projectTableMdl.setRowCount(0);
+		if (projectTableMdl.getRowCount() > 0) {
+			projectTableMdl.setRowCount(0);	
+		}
+		
 		projectTableMdl.setColumnIdentifiers(projectAndProcessCols);
 		
 	}
@@ -542,6 +551,7 @@ public class View extends JFrame implements Observer{
 		projectTableMdl.setColumnIdentifiers(cols);
 		projectTableMdl.setRowCount(0);
 		Iterator<T> it = data.iterator();
+		if (data.size() == 0) return;
 		while(it.hasNext()) {
 			T el = it.next();
 			if (el instanceof Projet) {
