@@ -791,7 +791,7 @@ public class Controller extends JFrame {
 
         taskListPanel = new JPanel();
         taskListPanel.setLayout(new BorderLayout());
-        taskListPanel.setBounds(270, 60, 250, 170);
+        taskListPanel.setBounds(270, 60, 276, 170);
 
         taskLst = new JList<>(tasksLstMdl);
         taskLst.setBorder(new TitledBorder("Tasks"));

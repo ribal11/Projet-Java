@@ -34,7 +34,7 @@ public class Task extends MyObservable
     	return  name;
     }
     public String toString() {
-        return id + ", " + name + ", " + cost + ", " + state + ", " + duration + "h";
+        return id + ", " + name + ", " + this.type +  ", " + cost + ", " + state + ", " + duration + "h";
     }
 
     public void addProcess(Process process) {
