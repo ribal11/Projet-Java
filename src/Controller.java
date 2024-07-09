@@ -162,6 +162,7 @@ public class Controller extends JFrame {
     private JPanel ResourceUsablePanel,HumanUsablePanel,materialUsablePanel ;
     private Set<HumanResourceUsage> humanUsageSet;
     private Set<MaterialUsage> materialUsageSet;
+    private  JLabel resourcesUsageTitleLbl;
    private Material defaultMaterial =  new Material("", "",0,"",null);
    private HumanResource defaultHuman = new HumanResource("", "","",0,null);
    
@@ -720,8 +721,8 @@ public class Controller extends JFrame {
                     }
                 }
                 
-                
-                	checkTypeAuthorization();
+                changeTaskTitle();
+                checkTypeAuthorization();
                 
             }
         });
@@ -732,10 +733,10 @@ public class Controller extends JFrame {
         createTaskPanel.setVisible(true);
         taskTitlePanel = new JPanel();
         taskTitlePanel.setLayout(null);
-        taskTitlePanel.setBounds(5, 10, 515, 35);
+        taskTitlePanel.setBounds(5, 10, 541, 35);
         taskTitleLbl = new JLabel("CREATE TASK");
         taskTitleLbl.setFont(font);
-        taskTitleLbl.setBounds(185, 0, 176, 35);
+        taskTitleLbl.setBounds(150, 0, 262, 35);
         taskTitlePanel.add(taskTitleLbl);
         createTaskPanel.add(taskTitlePanel);
 
@@ -903,7 +904,7 @@ public class Controller extends JFrame {
         			
         		}
         		clearProcessForm();
-        		
+        		changeProcessTitle();
         	cardLayout.show(mainPanel, "Processus");
         	}
         });
@@ -1051,7 +1052,7 @@ public class Controller extends JFrame {
         		cardLayout.show(mainPanel,"Resources" );
         		isResourceLayoutSelected = true;
         		processAddResourcesBtn.setSelected(false);
-        		
+        		changeResourceTitle();
                 populateHumanCmb();
                 populateMaterialCmb();
                 populateResourcesLstsMdls();
@@ -1105,7 +1106,7 @@ public class Controller extends JFrame {
         titleHumanUsagePanel.setBounds(10, 11, 531, 42);
         usableResourceFormPanel.add(titleHumanUsagePanel);
         
-        JLabel resourcesUsageTitleLbl = new JLabel("Resources");
+        resourcesUsageTitleLbl = new JLabel("Resources");
         resourcesUsageTitleLbl.setFont(new Font("Segoe UI Symbol", Font.BOLD, 24));
         titleHumanUsagePanel.add(resourcesUsageTitleLbl);
         //end title Panel
@@ -2459,5 +2460,18 @@ public class Controller extends JFrame {
     	}
     	
     	btnNewButton.setEnabled(false);
+    }
+    
+	private void changeTaskTitle() {
+        String title = "Tasks For: " + prj.name;
+        taskTitleLbl.setText(title);
+    }
+	private void changeProcessTitle() {
+        String title = "Processes For: " + task.name;
+        titleProcessLbl.setText(title);
+    }
+	private void changeResourceTitle() {
+        String title = "Resources For: "+ process.name;
+        resourcesUsageTitleLbl.setText(title);
     }
 }

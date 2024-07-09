@@ -476,6 +476,7 @@ public class View extends JFrame implements Observer{
 				}
 				}
 			 else if (e.getSource() == processCmb) {
+				 
 				if (updateProcess) {
 					
 					updateProcess = false;
@@ -483,7 +484,15 @@ public class View extends JFrame implements Observer{
 				}
 				if (processCmb.getSelectedIndex() > 0) {
 					usableOptionPanel.setVisible(true);
-					humanUsableRdb.setSelected(true);
+					if (humanUsableRdb.isSelected()) {
+						changeTableTitle("Human Resource Usage") ;
+						process = (Process) processCmb.getSelectedItem();
+						System.out.print(process);
+						populateTable(humanUsableCols, process.humanResources);
+					} else {
+						humanUsableRdb.setSelected(true);	
+					}
+					
 					
 					
 				} else  {

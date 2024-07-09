@@ -31,6 +31,8 @@ public class Process extends MyObservable implements Comparable<Process>, Serial
     
     public void setName(String name) {
     	this.name = name;
+    	 setChanged();
+         notifyObservers();
     }
     public void finishProcess() {
         this.state = "finished";
@@ -191,7 +193,7 @@ public class Process extends MyObservable implements Comparable<Process>, Serial
     }
 
     public String toString() {
-        return this.id + ", " + this.cost + ", " + this.state + "," + this.duration + "h";
+        return this.id + ", " + this.name + ", " +  this.cost + ", " + this.state + "," + this.duration + "h";
     }
     
     public String toComboBoxString() {
