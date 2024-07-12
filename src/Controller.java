@@ -357,11 +357,14 @@ public class Controller extends JFrame {
         miscellaneousMaterialRdb.setBounds(60, 10, 15, 25);
         miscellaneousMaterialRdb.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
+            	
                 if (miscellaneousMaterialRdb.isSelected()) {
                 	if (resourcesLst.getSelectedIndex() >= 0) {
+                		
                 		Iterator<MaterialUsage> itMaterialUsage = materialUsageSet.iterator();
                     	while(itMaterialUsage.hasNext()) {
                     		MaterialUsage mat = itMaterialUsage.next();
+                    		
                     		if (mat.material.id == resourcesLst.getSelectedValue().id) {
                     			return;
                     		}
